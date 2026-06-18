@@ -301,9 +301,9 @@
           <div class="mc-sub">0.173 GWh nuevos CUPS</div>
         </div>
         <div class="metric-cell">
-          <div class="mc-label">Recuperaciones</div>
+          <div class="mc-label">Renovaciones</div>
           <div class="mc-val" style="color:var(--amber)">+5</div>
-          <div class="mc-sub">0.06 GWh recuperados (gap >1d)</div>
+          <div class="mc-sub">0.06 GWh renovaciones</div>
         </div>
         <div class="metric-cell">
           <div class="mc-label">Churn real</div>
@@ -331,7 +331,7 @@
   <section class="charts-2">
     <div class="chart-card">
       <div class="chart-title">📥 Altas nuevas + Recuperaciones vs 📤 Churn — GWh por mes</div>
-      <div class="chart-sub">Verde = CUPS nuevos · Morado = renovaciones (gap ≤1d) · Naranja = recuperaciones (gap >1d) · Rojo = churn real</div>
+      <div class="chart-sub">Verde = altas nuevas (CUPS sin historial) · Naranja = renovaciones (CUPS que ya estuvieron) · Rojo = churn</div>
       <canvas id="chartCapPer"></canvas>
     </div>
     <div class="chart-card">
@@ -344,7 +344,7 @@
   <section class="charts-2">
     <div class="chart-card">
       <div class="chart-title">👥 Altas nuevas + Recuperaciones vs Churn — contratos por mes</div>
-      <div class="chart-sub">Verde = altas nuevas · Morado = renovaciones · Naranja = recuperaciones · Rojo = churn real</div>
+      <div class="chart-sub">Verde = altas nuevas (CUPS sin historial) · Naranja = renovaciones (CUPS que ya estuvieron) · Rojo = churn</div>
       <canvas id="chartCapPerN"></canvas>
     </div>
     <div class="chart-card">
@@ -436,20 +436,18 @@
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────
 const monthly = [
-  // g_new=altas nuevas, g_ren=renovaciones(gap<=1d), g_rec=recuperaciones(gap>1d),
-  // g_cap=total, g_per=perdidos, g_chu=churn real, net_g=neto GWh, vol=cartera
-  {m:'2025-07', g_new:3.012,g_ren:0.058,g_rec:0.779,g_cap:3.849,g_per:4.292,g_chu:2.867,net_g:-0.443,n_new:52,n_ren:1,n_rec:27,n_cap:80,n_per:186,n_chu:179,net_n:-106,vol:15.925},
-  {m:'2025-08', g_new:4.709,g_ren:0.001,g_rec:0.61,g_cap:5.319,g_per:6.706,g_chu:2.73,net_g:-1.387,n_new:73,n_ren:1,n_rec:14,n_cap:88,n_per:88,n_chu:74,net_n:0,vol:14.538},
-  {m:'2025-09', g_new:0.846,g_ren:0.0,g_rec:2.324,g_cap:3.171,g_per:4.032,g_chu:1.163,net_g:-0.861,n_new:37,n_ren:0,n_rec:6,n_cap:43,n_per:87,n_chu:80,net_n:-44,vol:13.677},
-  {m:'2025-10', g_new:8.861,g_ren:0.001,g_rec:0.538,g_cap:9.4,g_per:3.326,g_chu:2.92,net_g:6.074,n_new:95,n_ren:1,n_rec:8,n_cap:104,n_per:69,n_chu:60,net_n:35,vol:19.751},
-  {m:'2025-11', g_new:3.866,g_ren:0.0,g_rec:1.453,g_cap:5.319,g_per:5.673,g_chu:5.636,net_g:-0.354,n_new:108,n_ren:0,n_rec:14,n_cap:122,n_per:83,n_chu:80,net_n:39,vol:19.397},
-  {m:'2025-12', g_new:3.464,g_ren:0.0,g_rec:0.816,g_cap:4.28,g_per:4.435,g_chu:4.087,net_g:-0.155,n_new:83,n_ren:0,n_rec:9,n_cap:92,n_per:119,n_chu:111,net_n:-27,vol:19.242},
-  {m:'2026-01', g_new:4.303,g_ren:0.0,g_rec:0.467,g_cap:4.769,g_per:3.05,g_chu:2.959,net_g:1.719,n_new:74,n_ren:0,n_rec:17,n_cap:91,n_per:72,n_chu:60,net_n:19,vol:20.961},
-  {m:'2026-02', g_new:6.596,g_ren:0.0,g_rec:0.179,g_cap:6.775,g_per:6.242,g_chu:6.143,net_g:0.533,n_new:151,n_ren:0,n_rec:8,n_cap:159,n_per:116,n_chu:107,net_n:43,vol:21.494},
-  {m:'2026-03', g_new:6.844,g_ren:0.0,g_rec:0.481,g_cap:7.325,g_per:18.843,g_chu:18.227,net_g:-11.518,n_new:86,n_ren:0,n_rec:17,n_cap:103,n_per:268,n_chu:252,net_n:-165,vol:9.976},
-  {m:'2026-04', g_new:3.667,g_ren:0.078,g_rec:0.46,g_cap:4.205,g_per:4.775,g_chu:4.349,net_g:-0.57,n_new:138,n_ren:1,n_rec:24,n_cap:163,n_per:67,n_chu:58,net_n:96,vol:9.406},
-  {m:'2026-05', g_new:4.8,g_ren:0.001,g_rec:0.596,g_cap:5.397,g_per:2.983,g_chu:2.934,net_g:2.414,n_new:104,n_ren:1,n_rec:7,n_cap:112,n_per:78,n_chu:74,net_n:34,vol:11.82},
-  {m:'2026-06', g_new:0.173,g_ren:0.0,g_rec:0.06,g_cap:0.233,g_per:1.641,g_chu:1.641,net_g:-1.408,n_new:14,n_ren:0,n_rec:5,n_cap:19,n_per:65,n_chu:65,net_n:-46,vol:10.412},
+  {m:'2025-07',g_new:3.012,g_ren:0.837,g_cap:3.849,g_per:4.292,g_chu:2.867,net_g:-0.443,n_new:52,n_ren:28,n_cap:80,n_per:186,n_chu:179,net_n:-106,vol:15.925},
+  {m:'2025-08',g_new:4.709,g_ren:0.61,g_cap:5.319,g_per:6.706,g_chu:2.73,net_g:-1.387,n_new:73,n_ren:15,n_cap:88,n_per:88,n_chu:73,net_n:0,vol:14.538},
+  {m:'2025-09',g_new:0.846,g_ren:2.324,g_cap:3.171,g_per:4.032,g_chu:1.163,net_g:-0.861,n_new:37,n_ren:6,n_cap:43,n_per:87,n_chu:80,net_n:-44,vol:13.677},
+  {m:'2025-10',g_new:8.861,g_ren:0.539,g_cap:9.4,g_per:3.326,g_chu:2.919,net_g:6.074,n_new:95,n_ren:9,n_cap:104,n_per:69,n_chu:59,net_n:35,vol:19.751},
+  {m:'2025-11',g_new:3.866,g_ren:1.453,g_cap:5.319,g_per:5.673,g_chu:5.636,net_g:-0.354,n_new:108,n_ren:14,n_cap:122,n_per:83,n_chu:80,net_n:39,vol:19.397},
+  {m:'2025-12',g_new:3.464,g_ren:0.816,g_cap:4.28,g_per:4.435,g_chu:4.087,net_g:-0.155,n_new:83,n_ren:9,n_cap:92,n_per:119,n_chu:111,net_n:-27,vol:19.242},
+  {m:'2026-01',g_new:4.303,g_ren:0.467,g_cap:4.769,g_per:3.05,g_chu:2.959,net_g:1.719,n_new:74,n_ren:17,n_cap:91,n_per:72,n_chu:60,net_n:19,vol:20.961},
+  {m:'2026-02',g_new:6.596,g_ren:0.179,g_cap:6.775,g_per:6.242,g_chu:6.143,net_g:0.533,n_new:151,n_ren:8,n_cap:159,n_per:116,n_chu:107,net_n:43,vol:21.494},
+  {m:'2026-03',g_new:6.844,g_ren:0.481,g_cap:7.325,g_per:18.843,g_chu:18.227,net_g:-11.518,n_new:86,n_ren:17,n_cap:103,n_per:268,n_chu:252,net_n:-165,vol:9.976},
+  {m:'2026-04',g_new:3.667,g_ren:0.538,g_cap:4.205,g_per:4.775,g_chu:4.271,net_g:-0.57,n_new:138,n_ren:25,n_cap:163,n_per:67,n_chu:57,net_n:96,vol:9.406},
+  {m:'2026-05',g_new:4.8,g_ren:0.597,g_cap:5.397,g_per:2.983,g_chu:2.934,net_g:2.414,n_new:104,n_ren:8,n_cap:112,n_per:78,n_chu:73,net_n:34,vol:11.82},
+  {m:'2026-06',g_new:0.173,g_ren:0.06,g_cap:0.233,g_per:1.641,g_chu:1.641,net_g:-1.408,n_new:14,n_ren:5,n_cap:19,n_per:65,n_chu:65,net_n:-46,vol:10.412},
 ];
 
 const del_all = [
@@ -506,13 +504,11 @@ new Chart(document.getElementById('chartCapPer'),{
   data:{
     labels,
     datasets:[
-      {label:'Altas nuevas GWh',   data:monthly.map(x=>x.g_new),
+      {label:'Altas nuevas GWh',  data:monthly.map(x=>x.g_new),
        backgroundColor:'rgba(16,185,129,.8)',borderRadius:4,stack:'cap'},
-      {label:'Renovaciones GWh',   data:monthly.map(x=>x.g_ren),
-       backgroundColor:'rgba(139,92,246,.75)',borderRadius:4,stack:'cap'},
-      {label:'Recuperaciones GWh', data:monthly.map(x=>x.g_rec),
+      {label:'Renovaciones GWh',  data:monthly.map(x=>x.g_ren),
        backgroundColor:'rgba(245,158,11,.75)',borderRadius:4,stack:'cap'},
-      {label:'Churn real GWh',     data:monthly.map(x=>-x.g_chu),
+      {label:'Churn real GWh',    data:monthly.map(x=>-x.g_chu),
        backgroundColor:'rgba(239,68,68,.65)',borderRadius:4,stack:'per'},
     ]
   },
@@ -543,13 +539,11 @@ new Chart(document.getElementById('chartCapPerN'),{
   data:{
     labels,
     datasets:[
-      {label:'Altas nuevas',   data:monthly.map(x=>x.n_new),
+      {label:'Altas nuevas',  data:monthly.map(x=>x.n_new),
        backgroundColor:'rgba(16,185,129,.8)',borderRadius:4,stack:'cap'},
-      {label:'Renovaciones',   data:monthly.map(x=>x.n_ren),
-       backgroundColor:'rgba(139,92,246,.75)',borderRadius:4,stack:'cap'},
-      {label:'Recuperaciones', data:monthly.map(x=>x.n_rec),
+      {label:'Renovaciones',  data:monthly.map(x=>x.n_ren),
        backgroundColor:'rgba(245,158,11,.75)',borderRadius:4,stack:'cap'},
-      {label:'Churn real',     data:monthly.map(x=>-x.n_chu),
+      {label:'Churn real',    data:monthly.map(x=>-x.n_chu),
        backgroundColor:'rgba(239,68,68,.65)',borderRadius:4,stack:'per'},
     ]
   },

@@ -3,284 +3,397 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apolo Energías · Dashboard GWh</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<title>Apolo Dashboard – Contratos Servicios</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg:      #f5f4f0;
-    --card:    #ffffff;
-    --border:  rgba(0,0,0,0.09);
-    --text:    #1a1a18;
-    --muted:   #6b6a65;
-    --subtle:  #9b9a95;
-    --green:   #1D9E75;
-    --green-l: rgba(29,158,117,0.08);
-    --red:     #A32D2D;
-    --red-l:   rgba(163,45,45,0.10);
-    --amber:   #BA7517;
-    --amber-l: rgba(186,117,23,0.10);
-    --radius:  10px;
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --card2: #20243a;
+    --border: #2a2f45;
+    --accent: #4f8ef7;
+    --accent2: #34d399;
+    --accent3: #f59e0b;
+    --accent4: #f87171;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --radius: 12px;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg:      #1a1a18;
-      --card:    #242422;
-      --border:  rgba(255,255,255,0.09);
-      --text:    #e8e6df;
-      --muted:   #9b9a95;
-      --subtle:  #6b6a65;
-      --green-l: rgba(29,158,117,0.12);
-      --red-l:   rgba(163,45,45,0.14);
-      --amber-l: rgba(186,117,23,0.14);
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+  
+  header {
+    background: linear-gradient(135deg, #1a1d27 0%, #20243a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
   }
-  body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--text); padding: 24px 20px 48px; }
-  h1 { font-size: 17px; font-weight: 500; color: var(--text); }
-  .meta { font-size: 12px; color: var(--subtle); margin-top: 3px; }
-  .section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--subtle); margin: 20px 0 8px; }
-  .card { background: var(--card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
-  .hero-val { font-size: 42px; font-weight: 500; line-height: 1; }
-  .hero-sub { font-size: 14px; color: var(--muted); margin-top: 6px; }
-  .badge { display: inline-block; font-size: 12px; font-weight: 500; padding: 2px 10px; border-radius: 20px; }
-  .badge-green { background: rgba(29,158,117,0.12); color: var(--green); }
-  .badge-red   { background: rgba(163,45,45,0.12);  color: var(--red); }
-  .badge-amber { background: rgba(186,117,23,0.12); color: var(--amber); }
-  .prog-wrap { height: 10px; background: var(--border); border-radius: 5px; margin-top: 10px; position: relative; overflow: visible; }
-  .prog-fill { height: 10px; background: var(--green); border-radius: 5px; }
-  .prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--subtle); margin-top: 4px; }
-  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .mc { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
-  .mc .v { font-size: 22px; font-weight: 500; }
-  .mc .l { font-size: 12px; color: var(--muted); margin-top: 3px; }
-  .mc .s { font-size: 11px; color: var(--subtle); margin-top: 2px; }
-  .chart-wrap { position: relative; width: 100%; height: 200px; }
-  .chart-wrap-tall { position: relative; width: 100%; height: 220px; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead th { text-align: left; padding: 8px 14px; font-size: 11px; font-weight: 500; color: var(--subtle); border-bottom: 0.5px solid var(--border); }
-  thead th:not(:first-child) { text-align: right; }
-  tbody td { padding: 8px 14px; border-bottom: 0.5px solid var(--border); color: var(--text); }
-  tbody td:not(:first-child) { text-align: right; }
-  tbody tr:last-child td { border-bottom: none; }
-  .c-green { color: var(--green); font-weight: 500; }
-  .c-red   { color: var(--red);   font-weight: 500; }
-  .c-amber { color: var(--amber); font-weight: 500; }
-  .alert { border-radius: var(--radius); padding: 12px 16px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; }
-  .alert-red   { background: var(--red-l);   color: var(--red); }
-  .alert-amber { background: var(--amber-l); color: var(--amber); }
-  @media (max-width: 560px) { .grid4 { grid-template-columns: 1fr 1fr; } }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, #4f8ef7, #34d399);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 900; color: #fff;
+  }
+  .logo h1 { font-size: 1.3rem; font-weight: 700; color: var(--text); }
+  .logo p { font-size: 0.75rem; color: var(--muted); margin-top: 1px; }
+  .updated { font-size: 0.72rem; color: var(--muted); text-align: right; }
+  .updated span { color: var(--accent2); font-weight: 600; }
+
+  main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+  /* KPI Row */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .kpi-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px 22px; position: relative; overflow: hidden;
+  }
+  .kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--kpi-color, var(--accent));
+  }
+  .kpi-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .kpi-value { font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1; }
+  .kpi-sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+  .kpi-badge {
+    display: inline-block; margin-top: 6px; padding: 2px 8px; border-radius: 99px;
+    font-size: 0.7rem; font-weight: 700; background: rgba(79,142,247,.15); color: var(--accent);
+  }
+
+  /* Progress bar */
+  .progress-section {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px 28px; margin-bottom: 24px;
+  }
+  .progress-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; }
+  .progress-header h2 { font-size: 1rem; font-weight: 600; }
+  .progress-header .pct { font-size: 2.2rem; font-weight: 900; color: var(--accent); }
+  .progress-track {
+    background: var(--card2); border-radius: 99px; height: 20px; overflow: hidden;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, #4f8ef7, #34d399);
+    transition: width 1s ease;
+    position: relative;
+  }
+  .progress-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.72rem; color: var(--muted); }
+  .progress-milestone {
+    position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,.3);
+  }
+
+  /* Charts grid */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .chart-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px 22px;
+  }
+  .chart-card.full { grid-column: 1 / -1; }
+  .chart-title { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 16px; }
+  .chart-sub { font-size: 0.7rem; color: var(--muted); margin-bottom: 14px; margin-top: -10px; }
+  canvas { max-height: 260px; }
+
+  /* Table */
+  .table-section {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px 22px; margin-bottom: 24px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  th { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: .05em; padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 9px 10px; border-bottom: 1px solid rgba(42,47,69,.5); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(79,142,247,.04); }
+  .bar-cell { position: relative; }
+  .bar-bg { background: var(--card2); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 4px; min-width: 60px; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+
+  /* Status pills */
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.68rem; font-weight: 600; }
+  .pill-activo { background: rgba(52,211,153,.15); color: #34d399; }
+  .pill-baja { background: rgba(248,113,113,.15); color: #f87171; }
+  .pill-fin { background: rgba(148,163,184,.12); color: #94a3b8; }
+  .pill-pipe { background: rgba(245,158,11,.15); color: #f59e0b; }
+
+  /* 2-col lower */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+
+  footer {
+    text-align: center; padding: 20px; font-size: 0.72rem; color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 768px) {
+    main { padding: 16px; }
+    header { padding: 14px 16px; }
+    .charts-grid, .two-col { grid-template-columns: 1fr; }
+    .chart-card.full { grid-column: 1; }
+    .kpi-value { font-size: 1.6rem; }
+  }
 </style>
 </head>
 <body>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
-  <div>
-    <h1>Apolo Energías · Cartera GWh</h1>
-    <p class="meta">Fuente: ContratosServicios__10_.xlsx &nbsp;·&nbsp; Generado: 18/06/2026 08:48</p>
-  </div>
-  <span class="badge badge-amber" style="margin-top:4px;">Objetivo 145 GWh · dic 2026</span>
-</div>
-
-<!-- Hero -->
-<p class="section-label">Volumen activo</p>
-<div class="card">
-  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+<header>
+  <div class="logo">
+    <div class="logo-icon">A</div>
     <div>
-      <div class="hero-val">79.86 GWh</div>
-      <div class="hero-sub">Volumen contratado activo · Jun 26</div>
-      <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        <span class="badge badge-green">+70,7% desde jul 2025</span>
-        <span style="font-size:12px; color:var(--subtle);">Objetivo fin de año: 145 GWh</span>
+      <h1>Apolo Dashboard</h1>
+      <p>Contratos de Servicios · Energía</p>
+    </div>
+  </div>
+  <div class="updated">
+    Última actualización<br>
+    <span>15 jun 2026</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:#4f8ef7">
+      <div class="kpi-label">GWh Conseguidos</div>
+      <div class="kpi-value">62.6</div>
+      <div class="kpi-sub">desde jul 2025 · objetivo 145 GWh</div>
+      <div class="kpi-badge">43.2% del objetivo</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#34d399">
+      <div class="kpi-label">Contratos Activos</div>
+      <div class="kpi-value">1.567</div>
+      <div class="kpi-sub">76.41 GWh cartera total</div>
+      <div class="kpi-badge">portafolio</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#f59e0b">
+      <div class="kpi-label">Pipeline</div>
+      <div class="kpi-value">711</div>
+      <div class="kpi-sub">33.68 GWh en proceso</div>
+      <div class="kpi-badge">pendientes de firma/estudio</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#a78bfa">
+      <div class="kpi-label">Margen Neto Anual</div>
+      <div class="kpi-value">3.50M€</div>
+      <div class="kpi-sub">contratos activos</div>
+      <div class="kpi-badge">€/año estimado</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#f87171">
+      <div class="kpi-label">GWh Restantes</div>
+      <div class="kpi-value">82.4</div>
+      <div class="kpi-sub">para alcanzar objetivo 145 GWh</div>
+      <div class="kpi-badge">56.8%</div>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="progress-section">
+    <div class="progress-header">
+      <div>
+        <h2>🎯 Progreso hacia el Objetivo · 145 GWh</h2>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:4px">Acumulado desde jul 2025 · contratos activos únicamente</p>
       </div>
+      <div class="pct">43.2%</div>
     </div>
-    <div style="text-align:right;">
-      <div style="font-size:11px; color:var(--subtle); margin-bottom:2px;">Progreso objetivo</div>
-      <div style="font-size:32px; font-weight:500;">55.1%</div>
-      <div style="font-size:11px; color:var(--subtle);">Faltan 65.1 GWh en 6 meses</div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width:43.2%"></div>
+      <div class="progress-milestone" style="left:50%"></div>
+      <div class="progress-milestone" style="left:75%"></div>
     </div>
-  </div>
-  <div style="margin-top:16px;">
-    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--subtle); margin-bottom:4px;">
-      <span>0 GWh</span>
-      <span class="c-amber">Ritmo necesario: +10.85 GWh/mes</span>
-      <span>145 GWh</span>
-    </div>
-    <div class="prog-wrap">
-      <div class="prog-fill" style="width:55.1%;"></div>
-    </div>
-    <div class="prog-labels">
-      <span>Actual: 79.86 GWh</span>
-      <span class="c-red">Ritmo último mes: +0.46 GWh ⚠</span>
+    <div class="progress-labels">
+      <span>0</span>
+      <span>62.6 GWh actuales</span>
+      <span>50% · 72.5 GWh</span>
+      <span>75% · 108.75 GWh</span>
+      <span>🏁 145 GWh</span>
     </div>
   </div>
-</div>
 
-<!-- Métricas -->
-<div class="grid4" style="margin-top:10px;">
-  <div class="mc">
-    <div class="v c-green">+1.63</div>
-    <div class="l">GWh captados</div>
-    <div class="s">Jun 26</div>
+  <!-- Charts Row 1 -->
+  <div class="charts-grid">
+    <div class="chart-card full">
+      <div class="chart-title">📈 Acumulado GWh vs Objetivo — mensual desde jul 2025</div>
+      <div class="chart-sub">Línea verde = GWh acumulados | Línea naranja = objetivo lineal 145 GWh</div>
+      <canvas id="chartAcum"></canvas>
+    </div>
   </div>
-  <div class="mc">
-    <div class="v c-red">−1.16</div>
-    <div class="l">GWh perdidos</div>
-    <div class="s">Jun 26</div>
-  </div>
-  <div class="mc">
-    <div class="v c-green">+0.46</div>
-    <div class="l">GWh neto</div>
-    <div class="s">Jun 26</div>
-  </div>
-  <div class="mc">
-    <div class="v c-amber">Jul 25</div>
-    <div class="l">Mejor mes</div>
-    <div class="s">+14.43 GWh neto</div>
-  </div>
-</div>
 
-<!-- Gráfica cartera -->
-<p class="section-label">Evolución cartera activa (GWh)</p>
-<div class="card">
-  <div class="chart-wrap">
-    <canvas id="chartCartera"></canvas>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">📊 GWh nuevos por mes</div>
+      <canvas id="chartMonthly"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📋 Contratos nuevos por mes</div>
+      <canvas id="chartContratos"></canvas>
+    </div>
   </div>
-</div>
 
-<!-- Gráfica flujos -->
-<p class="section-label">Flujos mensuales: captados · perdidos · neto (GWh)</p>
-<div class="card">
-  <div class="chart-wrap-tall">
-    <canvas id="chartFlujos"></canvas>
+  <!-- Delegaciones table -->
+  <div class="table-section">
+    <div class="chart-title" style="margin-bottom:14px">🏢 Top Delegaciones · GWh aportados (desde jul 2025)</div>
+    <table id="tableDel">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Delegación</th>
+          <th>GWh</th>
+          <th>% del total</th>
+          <th>Distribución</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyDel"></tbody>
+    </table>
   </div>
-</div>
 
-<!-- Tabla -->
-<p class="section-label">Detalle mensual</p>
-<div class="card" style="padding:0; overflow:hidden;">
-  <table>
-    <thead>
-      <tr>
-        <th>Mes</th>
-        <th>Cartera GWh</th>
-        <th style="color:var(--green);">Captados</th>
-        <th style="color:var(--red);">Perdidos</th>
-        <th>Neto</th>
-      </tr>
-    </thead>
-    <tbody id="tablaBody"></tbody>
-  </table>
-</div>
+  <!-- Two col: donut + estados table -->
+  <div class="two-col">
+    <div class="chart-card">
+      <div class="chart-title">🍩 Distribución por Estado</div>
+      <canvas id="chartEstados"></canvas>
+    </div>
+    <div class="table-section" style="margin-bottom:0">
+      <div class="chart-title" style="margin-bottom:14px">📑 Resumen de Estados</div>
+      <table>
+        <thead><tr><th>Estado</th><th>Contratos</th><th>GWh</th></tr></thead>
+        <tbody id="tbodyEstados"></tbody>
+      </table>
+    </div>
+  </div>
 
-<!-- Alertas -->
-<div class="alert alert-red" style="margin-top:16px;">
-  ⚠ Para llegar a 145 GWh en diciembre, Apolo necesita +10.85 GWh neto/mes durante 6 meses. El ritmo de Jun 26 fue +0.46 GWh.
-</div>
+</main>
+
+<footer>Apolo Business · Dashboard actualizado el 15/06/2026 · Datos: ContratosServicios__10_.xlsx</footer>
 
 <script>
-const datos = [{"mes": "2025-07", "label": "Jul 25", "cartera": 46.8, "captados": 17.96, "perdidos": 3.53, "neto": 14.43}, {"mes": "2025-08", "label": "Aug 25", "cartera": 44.83, "captados": 1.71, "perdidos": 6.34, "neto": -4.64}, {"mes": "2025-09", "label": "Sep 25", "cartera": 50.13, "captados": 11.72, "perdidos": 3.28, "neto": 8.44}, {"mes": "2025-10", "label": "Oct 25", "cartera": 54.9, "captados": 7.94, "perdidos": 2.19, "neto": 5.76}, {"mes": "2025-11", "label": "Nov 25", "cartera": 60.86, "captados": 8.27, "perdidos": 3.73, "neto": 4.54}, {"mes": "2025-12", "label": "Dec 25", "cartera": 65.7, "captados": 8.58, "perdidos": 4.38, "neto": 4.2}, {"mes": "2026-01", "label": "Jan 26", "cartera": 64.99, "captados": 3.9, "perdidos": 2.13, "neto": 1.77}, {"mes": "2026-02", "label": "Feb 26", "cartera": 70.07, "captados": 7.51, "perdidos": 3.66, "neto": 3.86}, {"mes": "2026-03", "label": "Mar 26", "cartera": 78.14, "captados": 11.43, "perdidos": 4.72, "neto": 6.71}, {"mes": "2026-04", "label": "Apr 26", "cartera": 78.4, "captados": 4.83, "perdidos": 4.54, "neto": 0.28}, {"mes": "2026-05", "label": "May 26", "cartera": 79.47, "captados": 5.2, "perdidos": 1.25, "neto": 3.95}, {"mes": "2026-06", "label": "Jun 26", "cartera": 79.86, "captados": 1.63, "perdidos": 1.16, "neto": 0.46}];
-const labels   = datos.map(d => d.label);
-const cartera  = datos.map(d => d.cartera);
-const captados = datos.map(d => d.captados);
-const perdidos = datos.map(d => d.perdidos);
-const neto     = datos.map(d => d.neto);
+const D = {"obj":145,"gwh":62.62,"pct":43.2,"n_activos":1567,"gwh_activos":76.41,"n_pipe":711,"gwh_pipe":33.68,"margen":3498764.0,"updated":"2026-06-15","monthly":[{"m":"2025-07","g":6.235,"a":6.235},{"m":"2025-08","g":4.407,"a":10.642},{"m":"2025-09","g":3.636,"a":14.278},{"m":"2025-10","g":8.492,"a":22.77},{"m":"2025-11","g":5.328,"a":28.098},{"m":"2025-12","g":4.036,"a":32.134},{"m":"2026-01","g":5.948,"a":38.082},{"m":"2026-02","g":5.98,"a":44.061},{"m":"2026-03","g":8.115,"a":52.177},{"m":"2026-04","g":3.758,"a":55.935},{"m":"2026-05","g":5.117,"a":61.052},{"m":"2026-06","g":1.563,"a":62.615}],"monthly_n":[{"m":"2025-07","c":106},{"m":"2025-08","c":76},{"m":"2025-09","c":61},{"m":"2025-10","c":79},{"m":"2025-11","c":128},{"m":"2025-12","c":99},{"m":"2026-01","c":103},{"m":"2026-02","c":144},{"m":"2026-03","c":111},{"m":"2026-04","c":144},{"m":"2026-05","c":90},{"m":"2026-06","c":82}],"del_inicio":[{"d":"CENTRAL","g":14.157},{"d":"EFICAE SOLUCIONES","g":10.236},{"d":"ENERGAZE","g":7.151},{"d":"EFERGETICA","g":3.889},{"d":"IDARMSL","g":3.346},{"d":"Several Energy","g":2.789},{"d":"SOLARBITS","g":2.379},{"d":"JUAN RAMON VICTORIA","g":1.847},{"d":"GESERVAL","g":1.706},{"d":"ECOHORTICOLA","g":1.663},{"d":"ENERGY POINT","g":1.203},{"d":"AHORRO DIRECT SL","g":1.203}],"del_all":[{"d":"CENTRAL","c":277,"g":20.751},{"d":"EFICAE SOLUCIONES","c":10,"g":10.236},{"d":"ENERGAZE","c":134,"g":7.271},{"d":"EFERGETICA","c":56,"g":5.447},{"d":"IDARMSL","c":4,"g":3.346},{"d":"SOLARBITS","c":86,"g":2.893},{"d":"Several Energy","c":106,"g":2.789},{"d":"GESERVAL","c":127,"g":2.325},{"d":"JUAN RAMON VICTORIA","c":29,"g":1.847},{"d":"SG Energy","c":2,"g":1.807}],"estados":[{"e":"?","c":1,"g":0.0},{"e":"Activo","c":1567,"g":76.411},{"e":"Baja","c":838,"g":35.69},{"e":"Confirmado","c":11,"g":0.498},{"e":"Desestimado","c":18,"g":0.474},{"e":"Finalizado","c":1020,"g":41.875},{"e":"KO","c":547,"g":31.598},{"e":"Para Estudio","c":184,"g":3.719},{"e":"Para Firma","c":298,"g":14.394},{"e":"Para Tramitar","c":14,"g":0.441},{"e":"Previo","c":84,"g":6.265},{"e":"Valido","c":120,"g":8.362}]};
 
-const dark  = matchMedia("(prefers-color-scheme: dark)").matches;
-const grid  = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
-const txt   = dark ? "#6b6a65" : "#9b9a95";
+const labels = D.monthly.map(x => x.m);
+const n = D.monthly.length;
 
-// Cartera
-new Chart(document.getElementById("chartCartera"), {
-  type: "line",
+// Linear target line
+const targetLine = labels.map((_, i) => +((D.obj / 24 * (i + 1)).toFixed(2))); // 24 months total aprox
+
+const chartDefaults = {
+  plugins: { legend: { labels: { color: '#8892a4', font: { size: 11 } } } },
+  scales: {
+    x: { ticks: { color: '#8892a4', font: { size: 10 } }, grid: { color: 'rgba(42,47,69,.6)' } },
+    y: { ticks: { color: '#8892a4', font: { size: 10 } }, grid: { color: 'rgba(42,47,69,.6)' } }
+  }
+};
+
+// Chart 1: Cumulative
+new Chart(document.getElementById('chartAcum'), {
+  type: 'line',
   data: {
     labels,
     datasets: [
       {
-        label: "Cartera GWh",
-        data: cartera,
-        borderColor: "#1D9E75",
-        backgroundColor: dark ? "rgba(29,158,117,0.10)" : "rgba(29,158,117,0.07)",
-        fill: true, tension: 0.35, borderWidth: 2,
-        pointRadius: 4, pointBackgroundColor: "#1D9E75"
+        label: 'GWh Acumulados',
+        data: D.monthly.map(x => x.a),
+        borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,.12)',
+        fill: true, tension: 0.3, pointRadius: 4, borderWidth: 2.5
       },
       {
-        label: "Objetivo 145 GWh",
-        data: Array(labels.length).fill(145),
-        borderColor: dark ? "#EF9F27" : "#BA7517",
-        borderDash: [5,4], borderWidth: 1.5,
-        pointRadius: 0, fill: false
+        label: 'Objetivo lineal (145 GWh)',
+        data: targetLine,
+        borderColor: '#f59e0b', borderDash: [6, 4],
+        fill: false, tension: 0, pointRadius: 0, borderWidth: 2
+      },
+      {
+        label: 'Objetivo total (145 GWh)',
+        data: labels.map(() => D.obj),
+        borderColor: 'rgba(248,113,113,.5)', borderDash: [3, 6],
+        fill: false, tension: 0, pointRadius: 0, borderWidth: 1.5
       }
     ]
   },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: { callbacks: { label: c => "  " + c.dataset.label + ": " + c.parsed.y.toFixed(2) + " GWh" } }
-    },
-    scales: {
-      x: { grid: { color: grid }, ticks: { color: txt, font: { size: 11 } } },
-      y: { grid: { color: grid }, ticks: { color: txt, font: { size: 11 }, callback: v => v + " GWh" }, min: 0, max: 160 }
-    }
+  options: { ...chartDefaults, responsive: true, interaction: { mode: 'index' },
+    plugins: { ...chartDefaults.plugins, tooltip: { backgroundColor: '#1a1d27', borderColor: '#2a2f45', borderWidth: 1 } }
   }
 });
 
-// Flujos
-new Chart(document.getElementById("chartFlujos"), {
-  type: "bar",
+// Chart 2: Monthly GWh
+new Chart(document.getElementById('chartMonthly'), {
+  type: 'bar',
   data: {
     labels,
-    datasets: [
-      {
-        label: "Captados",
-        data: captados,
-        backgroundColor: dark ? "rgba(29,158,117,0.70)" : "rgba(29,158,117,0.75)",
-        borderRadius: 3
-      },
-      {
-        label: "Perdidos",
-        data: perdidos.map(v => -v),
-        backgroundColor: dark ? "rgba(163,45,45,0.70)" : "rgba(163,45,45,0.70)",
-        borderRadius: 3
-      },
-      {
-        label: "Neto",
-        data: neto,
-        type: "line",
-        borderColor: dark ? "#FAC775" : "#BA7517",
-        backgroundColor: "transparent",
-        borderWidth: 2, pointRadius: 4,
-        pointBackgroundColor: dark ? "#FAC775" : "#BA7517",
-        tension: 0.3
-      }
-    ]
+    datasets: [{
+      label: 'GWh nuevos',
+      data: D.monthly.map(x => x.g),
+      backgroundColor: labels.map((_, i) => i < n - 1 ? 'rgba(79,142,247,.7)' : 'rgba(79,142,247,.35)'),
+      borderRadius: 5
+    }]
+  },
+  options: { ...chartDefaults, responsive: true }
+});
+
+// Chart 3: Monthly contracts count
+new Chart(document.getElementById('chartContratos'), {
+  type: 'bar',
+  data: {
+    labels: D.monthly_n.map(x => x.m),
+    datasets: [{
+      label: 'Contratos activos nuevos',
+      data: D.monthly_n.map(x => x.c),
+      backgroundColor: 'rgba(52,211,153,.65)',
+      borderRadius: 5
+    }]
+  },
+  options: { ...chartDefaults, responsive: true }
+});
+
+// Chart 4: Estado donut
+const estColors = {
+  'Activo': '#34d399', 'Para Firma': '#f59e0b', 'Para Estudio': '#a78bfa',
+  'Valido': '#60a5fa', 'Previo': '#fb923c', 'Confirmado': '#4ade80',
+  'Para Tramitar': '#c084fc', 'Finalizado': '#94a3b8', 'Baja': '#f87171',
+  'KO': '#ef4444', 'Desestimado': '#6b7280', '?': '#374151'
+};
+const estShow = D.estados.filter(x => x.c > 5);
+new Chart(document.getElementById('chartEstados'), {
+  type: 'doughnut',
+  data: {
+    labels: estShow.map(x => x.e),
+    datasets: [{
+      data: estShow.map(x => x.c),
+      backgroundColor: estShow.map(x => estColors[x.e] || '#4f8ef7'),
+      borderColor: '#1a1d27', borderWidth: 2
+    }]
   },
   options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { display: true, position: "top", labels: { color: txt, font: { size: 11 }, boxWidth: 12, padding: 16 } },
-      tooltip: { callbacks: { label: c => "  " + c.dataset.label + ": " + Math.abs(c.parsed.y).toFixed(2) + " GWh" } }
-    },
-    scales: {
-      x: { grid: { color: grid }, ticks: { color: txt, font: { size: 11 } } },
-      y: { grid: { color: grid }, ticks: { color: txt, font: { size: 11 }, callback: v => Math.abs(v).toFixed(0) + " GWh" } }
-    }
+    responsive: true,
+    plugins: { legend: { position: 'right', labels: { color: '#8892a4', font: { size: 10 }, padding: 8 } } }
   }
 });
 
-// Tabla
-const tbody = document.getElementById("tablaBody");
-[...datos].reverse().forEach(d => {
-  const nc = d.neto >= 0 ? "c-green" : "c-red";
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td><strong>${d.label}</strong></td>
-    <td>${d.cartera.toFixed(2)}</td>
-    <td class="c-green">+${d.captados.toFixed(2)}</td>
-    <td class="c-red">−${d.perdidos.toFixed(2)}</td>
-    <td class="${nc}">${d.neto >= 0 ? "+" : ""}${d.neto.toFixed(2)}</td>
-  `;
-  tbody.appendChild(tr);
+// Delegaciones table
+const maxDg = Math.max(...D.del_inicio.map(x => x.g));
+const totalDg = D.del_inicio.reduce((s, x) => s + x.g, 0);
+const tbody = document.getElementById('tbodyDel');
+D.del_inicio.forEach((row, i) => {
+  const pct = (row.g / totalDg * 100).toFixed(1);
+  const bar = (row.g / maxDg * 100).toFixed(1);
+  tbody.innerHTML += `<tr>
+    <td style="color:var(--muted)">${i + 1}</td>
+    <td style="font-weight:500">${row.d}</td>
+    <td style="color:var(--accent2);font-weight:700">${row.g.toFixed(3)}</td>
+    <td style="color:var(--muted)">${pct}%</td>
+    <td class="bar-cell">
+      <div class="bar-bg"><div class="bar-fill" style="width:${bar}%"></div></div>
+    </td>
+  </tr>`;
+});
+
+// Estados table
+const pillMap = { 'Activo': 'activo', 'Baja': 'baja', 'Finalizado': 'fin', 'KO': 'baja',
+  'Para Firma': 'pipe', 'Para Estudio': 'pipe', 'Valido': 'pipe', 'Previo': 'pipe', 'Confirmado': 'pipe', 'Para Tramitar': 'pipe' };
+const tbodyE = document.getElementById('tbodyEstados');
+D.estados.filter(x => x.c > 0).sort((a, b) => b.c - a.c).forEach(row => {
+  const cls = pillMap[row.e] || 'fin';
+  tbodyE.innerHTML += `<tr>
+    <td><span class="pill pill-${cls}">${row.e}</span></td>
+    <td style="font-weight:600">${row.c.toLocaleString('es-ES')}</td>
+    <td style="color:var(--accent2)">${row.g.toFixed(2)}</td>
+  </tr>`;
 });
 </script>
 </body>

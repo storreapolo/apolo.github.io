@@ -771,14 +771,22 @@ function openDetail(name) {
     }
   };
 
+  const stackedScales = {
+    x: { ticks:{color:'#9ca3af',font:{size:8}}, grid:{display:false}, stacked:true },
+    y: { ticks:{color:'#9ca3af',font:{size:8}}, grid:{color:'rgba(200,210,230,.5)'}, stacked:true }
+  };
+  const stackedOpts = { responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ labels:{ color:'#6b7280', font:{size:9} } } },
+    scales: stackedScales
+  };
   detailCharts.gwh = new Chart(document.getElementById('detailChartGWh'), {
     type: 'bar',
     data: { labels: labels12, datasets: [
-      { label: 'Altas nuevas GWh',  data: d.monthly.map(m => m.c_g), backgroundColor: 'rgba(16,185,129,.75)', borderRadius: 3, stack:'cap' },
-      { label: 'Renovaciones GWh',  data: d.monthly.map(m => m.r_g), backgroundColor: 'rgba(245,158,11,.75)', borderRadius: 3, stack:'cap' },
-      { label: 'Churn real GWh',    data: d.monthly.map(m => -m.ch_g), backgroundColor: 'rgba(239,68,68,.65)', borderRadius: 3, stack:'per' }
+      { label: 'Altas nuevas GWh',  data: d.monthly.map(m => m.c_g),   backgroundColor: 'rgba(16,185,129,.8)',  borderRadius: 3 },
+      { label: 'Renovaciones GWh',  data: d.monthly.map(m => m.r_g),   backgroundColor: 'rgba(245,158,11,.8)', borderRadius: 3 },
+      { label: 'Churn real GWh',    data: d.monthly.map(m => -m.ch_g), backgroundColor: 'rgba(239,68,68,.7)',  borderRadius: 3 }
     ]},
-    options: {...baseOpts, scales:{...baseOpts.scales, x:{...baseOpts.scales.x,stacked:true}, y:{...baseOpts.scales.y,stacked:true}}}
+    options: stackedOpts
   });
 
   detailCharts.neto = new Chart(document.getElementById('detailChartNeto'), {
@@ -795,11 +803,11 @@ function openDetail(name) {
   detailCharts.n = new Chart(document.getElementById('detailChartN'), {
     type: 'bar',
     data: { labels: labels12, datasets: [
-      { label: 'Altas nuevas',  data: d.monthly.map(m => m.c_n), backgroundColor: 'rgba(16,185,129,.75)', borderRadius: 3, stack:'cap' },
-      { label: 'Renovaciones',  data: d.monthly.map(m => m.r_n), backgroundColor: 'rgba(245,158,11,.75)', borderRadius: 3, stack:'cap' },
-      { label: 'Churn real',    data: d.monthly.map(m => -m.ch_n), backgroundColor: 'rgba(239,68,68,.65)', borderRadius: 3, stack:'per' }
+      { label: 'Altas nuevas',  data: d.monthly.map(m => m.c_n),   backgroundColor: 'rgba(16,185,129,.8)',  borderRadius: 3 },
+      { label: 'Renovaciones',  data: d.monthly.map(m => m.r_n),   backgroundColor: 'rgba(245,158,11,.8)', borderRadius: 3 },
+      { label: 'Churn real',    data: d.monthly.map(m => -m.ch_n), backgroundColor: 'rgba(239,68,68,.7)',  borderRadius: 3 }
     ]},
-    options: {...baseOpts, scales:{...baseOpts.scales, x:{...baseOpts.scales.x,stacked:true}, y:{...baseOpts.scales.y,stacked:true}}}
+    options: stackedOpts
   });
 }
 

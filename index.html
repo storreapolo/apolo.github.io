@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apolo Energías · Dashboard GWh</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:      #f5f4f0;
+    --card:    #ffffff;
+    --border:  rgba(0,0,0,0.09);
+    --text:    #1a1a18;
+    --muted:   #6b6a65;
+    --subtle:  #9b9a95;
+    --green:   #1D9E75;
+    --green-l: rgba(29,158,117,0.08);
+    --red:     #A32D2D;
+    --red-l:   rgba(163,45,45,0.10);
+    --amber:   #BA7517;
+    --amber-l: rgba(186,117,23,0.10);
+    --radius:  10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:      #1a1a18;
+      --card:    #242422;
+      --border:  rgba(255,255,255,0.09);
+      --text:    #e8e6df;
+      --muted:   #9b9a95;
+      --subtle:  #6b6a65;
+      --green-l: rgba(29,158,117,0.12);
+      --red-l:   rgba(163,45,45,0.14);
+      --amber-l: rgba(186,117,23,0.14);
+    }
+  }
+  body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--text); padding: 24px 20px 48px; }
+  h1 { font-size: 17px; font-weight: 500; color: var(--text); }
+  .meta { font-size: 12px; color: var(--subtle); margin-top: 3px; }
+  .section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--subtle); margin: 20px 0 8px; }
+  .card { background: var(--card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+  .hero-val { font-size: 42px; font-weight: 500; line-height: 1; }
+  .hero-sub { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 500; padding: 2px 10px; border-radius: 20px; }
+  .badge-green { background: rgba(29,158,117,0.12); color: var(--green); }
+  .badge-red   { background: rgba(163,45,45,0.12);  color: var(--red); }
+  .badge-amber { background: rgba(186,117,23,0.12); color: var(--amber); }
+  .prog-wrap { height: 10px; background: var(--border); border-radius: 5px; margin-top: 10px; position: relative; overflow: visible; }
+  .prog-fill { height: 10px; background: var(--green); border-radius: 5px; }
+  .prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--subtle); margin-top: 4px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .mc { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .mc .v { font-size: 22px; font-weight: 500; }
+  .mc .l { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .mc .s { font-size: 11px; color: var(--subtle); margin-top: 2px; }
+  .chart-wrap { position: relative; width: 100%; height: 200px; }
+  .chart-wrap-tall { position: relative; width: 100%; height: 220px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { text-align: left; padding: 8px 14px; font-size: 11px; font-weight: 500; color: var(--subtle); border-bottom: 0.5px solid var(--border); }
+  thead th:not(:first-child) { text-align: right; }
+  tbody td { padding: 8px 14px; border-bottom: 0.5px solid var(--border); color: var(--text); }
+  tbody td:not(:first-child) { text-align: right; }
+  tbody tr:last-child td { border-bottom: none; }
+  .c-green { color: var(--green); font-weight: 500; }
+  .c-red   { color: var(--red);   font-weight: 500; }
+  .c-amber { color: var(--amber); font-weight: 500; }
+  .alert { border-radius: var(--radius); padding: 12px 16px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; }
+  .alert-red   { background: var(--red-l);   color: var(--red); }
+  .alert-amber { background: var(--amber-l); color: var(--amber); }
+  @media (max-width: 560px) { .grid4 { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
+  <div>
+    <h1>Apolo Energías · Cartera GWh</h1>
+    <p class="meta">Fuente: ContratosServicios__10_.xlsx &nbsp;·&nbsp; Generado: 18/06/2026 08:48</p>
+  </div>
+  <span class="badge badge-amber" style="margin-top:4px;">Objetivo 145 GWh · dic 2026</span>
+</div>
+
+<!-- Hero -->
+<p class="section-label">Volumen activo</p>
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+    <div>
+      <div class="hero-val">79.86 GWh</div>
+      <div class="hero-sub">Volumen contratado activo · Jun 26</div>
+      <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <span class="badge badge-green">+70,7% desde jul 2025</span>
+        <span style="font-size:12px; color:var(--subtle);">Objetivo fin de año: 145 GWh</span>
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:11px; color:var(--subtle); margin-bottom:2px;">Progreso objetivo</div>
+      <div style="font-size:32px; font-weight:500;">55.1%</div>
+      <div style="font-size:11px; color:var(--subtle);">Faltan 65.1 GWh en 6 meses</div>
+    </div>
+  </div>
+  <div style="margin-top:16px;">
+    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--subtle); margin-bottom:4px;">
+      <span>0 GWh</span>
+      <span class="c-amber">Ritmo necesario: +10.85 GWh/mes</span>
+      <span>145 GWh</span>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-fill" style="width:55.1%;"></div>
+    </div>
+    <div class="prog-labels">
+      <span>Actual: 79.86 GWh</span>
+      <span class="c-red">Ritmo último mes: +0.46 GWh ⚠</span>
+    </div>
+  </div>
+</div>
+
+<!-- Métricas -->
+<div class="grid4" style="margin-top:10px;">
+  <div class="mc">
+    <div class="v c-green">+1.63</div>
+    <div class="l">GWh captados</div>
+    <div class="s">Jun 26</div>
+  </div>
+  <div class="mc">
+    <div class="v c-red">−1.16</div>
+    <div class="l">GWh perdidos</div>
+    <div class="s">Jun 26</div>
+  </div>
+  <div class="mc">
+    <div class="v c-green">+0.46</div>
+    <div class="l">GWh neto</div>
+    <div class="s">Jun 26</div>
+  </div>
+  <div class="mc">
+    <div class="v c-amber">Jul 25</div>
+    <div class="l">Mejor mes</div>
+    <div class="s">+14.43 GWh neto</div>
+  </div>
+</div>
+
+<!-- Gráfica cartera -->
+<p class="section-label">Evolución cartera activa (GWh)</p>
+<div class="card">
+  <div class="chart-wrap">
+    <canvas id="chartCartera"></canvas>
+  </div>
+</div>
+
+<!-- Gráfica flujos -->
+<p class="section-label">Flujos mensuales: captados · perdidos · neto (GWh)</p>
+<div class="card">
+  <div class="chart-wrap-tall">
+    <canvas id="chartFlujos"></canvas>
+  </div>
+</div>
+
+<!-- Tabla -->
+<p class="section-label">Detalle mensual</p>
+<div class="card" style="padding:0; overflow:hidden;">
+  <table>
+    <thead>
+      <tr>
+        <th>Mes</th>
+        <th>Cartera GWh</th>
+        <th style="color:var(--green);">Captados</th>
+        <th style="color:var(--red);">Perdidos</th>
+        <th>Neto</th>
+      </tr>
+    </thead>
+    <tbody id="tablaBody"></tbody>
+  </table>
+</div>
+
+<!-- Alertas -->
+<div class="alert alert-red" style="margin-top:16px;">
+  ⚠ Para llegar a 145 GWh en diciembre, Apolo necesita +10.85 GWh neto/mes durante 6 meses. El ritmo de Jun 26 fue +0.46 GWh.
+</div>
+
+<script>
+const datos = [{"mes": "2025-07", "label": "Jul 25", "cartera": 46.8, "captados": 17.96, "perdidos": 3.53, "neto": 14.43}, {"mes": "2025-08", "label": "Aug 25", "cartera": 44.83, "captados": 1.71, "perdidos": 6.34, "neto": -4.64}, {"mes": "2025-09", "label": "Sep 25", "cartera": 50.13, "captados": 11.72, "perdidos": 3.28, "neto": 8.44}, {"mes": "2025-10", "label": "Oct 25", "cartera": 54.9, "captados": 7.94, "perdidos": 2.19, "neto": 5.76}, {"mes": "2025-11", "label": "Nov 25", "cartera": 60.86, "captados": 8.27, "perdidos": 3.73, "neto": 4.54}, {"mes": "2025-12", "label": "Dec 25", "cartera": 65.7, "captados": 8.58, "perdidos": 4.38, "neto": 4.2}, {"mes": "2026-01", "label": "Jan 26", "cartera": 64.99, "captados": 3.9, "perdidos": 2.13, "neto": 1.77}, {"mes": "2026-02", "label": "Feb 26", "cartera": 70.07, "captados": 7.51, "perdidos": 3.66, "neto": 3.86}, {"mes": "2026-03", "label": "Mar 26", "cartera": 78.14, "captados": 11.43, "perdidos": 4.72, "neto": 6.71}, {"mes": "2026-04", "label": "Apr 26", "cartera": 78.4, "captados": 4.83, "perdidos": 4.54, "neto": 0.28}, {"mes": "2026-05", "label": "May 26", "cartera": 79.47, "captados": 5.2, "perdidos": 1.25, "neto": 3.95}, {"mes": "2026-06", "label": "Jun 26", "cartera": 79.86, "captados": 1.63, "perdidos": 1.16, "neto": 0.46}];
+const labels   = datos.map(d => d.label);
+const cartera  = datos.map(d => d.cartera);
+const captados = datos.map(d => d.captados);
+const perdidos = datos.map(d => d.perdidos);
+const neto     = datos.map(d => d.neto);
+
+const dark  = matchMedia("(prefers-color-scheme: dark)").matches;
+const grid  = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
+const txt   = dark ? "#6b6a65" : "#9b9a95";
+
+// Cartera
+new Chart(document.getElementById("chartCartera"), {
+  type: "line",
+  data: {
+    labels,
+    datasets: [
+      {
+        label: "Cartera GWh",
+        data: cartera,
+        borderColor: "#1D9E75",
+        backgroundColor: dark ? "rgba(29,158,117,0.10)" : "rgba(29,158,117,0.07)",
+        fill: true, tension: 0.35, borderWidth: 2,
+        pointRadius: 4, pointBackgroundColor: "#1D9E75"
+      },
+      {
+        label: "Objetivo 145 GWh",
+        data: Array(labels.length).fill(145),
+        borderColor: dark ? "#EF9F27" : "#BA7517",
+        borderDash: [5,4], borderWidth: 1.5,
+        pointRadius: 0, fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: c => "  " + c.dataset.label + ": " + c.parsed.y.toFixed(2) + " GWh" } }
+    },
+    scales: {
+      x: { grid: { color: grid }, ticks: { color: txt, font: { size: 11 } } },
+      y: { grid: { color: grid }, ticks: { color: txt, font: { size: 11 }, callback: v => v + " GWh" }, min: 0, max: 160 }
+    }
+  }
+});
+
+// Flujos
+new Chart(document.getElementById("chartFlujos"), {
+  type: "bar",
+  data: {
+    labels,
+    datasets: [
+      {
+        label: "Captados",
+        data: captados,
+        backgroundColor: dark ? "rgba(29,158,117,0.70)" : "rgba(29,158,117,0.75)",
+        borderRadius: 3
+      },
+      {
+        label: "Perdidos",
+        data: perdidos.map(v => -v),
+        backgroundColor: dark ? "rgba(163,45,45,0.70)" : "rgba(163,45,45,0.70)",
+        borderRadius: 3
+      },
+      {
+        label: "Neto",
+        data: neto,
+        type: "line",
+        borderColor: dark ? "#FAC775" : "#BA7517",
+        backgroundColor: "transparent",
+        borderWidth: 2, pointRadius: 4,
+        pointBackgroundColor: dark ? "#FAC775" : "#BA7517",
+        tension: 0.3
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: true, position: "top", labels: { color: txt, font: { size: 11 }, boxWidth: 12, padding: 16 } },
+      tooltip: { callbacks: { label: c => "  " + c.dataset.label + ": " + Math.abs(c.parsed.y).toFixed(2) + " GWh" } }
+    },
+    scales: {
+      x: { grid: { color: grid }, ticks: { color: txt, font: { size: 11 } } },
+      y: { grid: { color: grid }, ticks: { color: txt, font: { size: 11 }, callback: v => Math.abs(v).toFixed(0) + " GWh" } }
+    }
+  }
+});
+
+// Tabla
+const tbody = document.getElementById("tablaBody");
+[...datos].reverse().forEach(d => {
+  const nc = d.neto >= 0 ? "c-green" : "c-red";
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><strong>${d.label}</strong></td>
+    <td>${d.cartera.toFixed(2)}</td>
+    <td class="c-green">+${d.captados.toFixed(2)}</td>
+    <td class="c-red">−${d.perdidos.toFixed(2)}</td>
+    <td class="${nc}">${d.neto >= 0 ? "+" : ""}${d.neto.toFixed(2)}</td>
+  `;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>

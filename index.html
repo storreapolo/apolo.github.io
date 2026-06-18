@@ -296,24 +296,24 @@
     <div class="metric-strip-wrap">
       <div class="metric-strip">
         <div class="metric-cell">
-          <div class="mc-label">Captados</div>
-          <div class="mc-val pos">+114</div>
-          <div class="mc-sub">3.84 GWh nuevos</div>
+          <div class="mc-label">Altas nuevas</div>
+          <div class="mc-val pos">+14</div>
+          <div class="mc-sub">0.17 GWh nuevos CUPS</div>
         </div>
         <div class="metric-cell">
-          <div class="mc-label">Perdidos</div>
+          <div class="mc-label">Recuperaciones</div>
+          <div class="mc-val" style="color:var(--amber)">+5</div>
+          <div class="mc-sub">0.06 GWh CUPS recuperados</div>
+        </div>
+        <div class="metric-cell">
+          <div class="mc-label">Churn real</div>
           <div class="mc-val neg">−65</div>
-          <div class="mc-sub">1.64 GWh perdidos</div>
-        </div>
-        <div class="metric-cell">
-          <div class="mc-label">Neto contratos</div>
-          <div class="mc-val pos">+49</div>
-          <div class="mc-sub">crecimiento neto</div>
+          <div class="mc-sub">1.64 GWh perdidos definitivos</div>
         </div>
         <div class="metric-cell">
           <div class="mc-label">Neto GWh</div>
-          <div class="mc-val pos">+2.20</div>
-          <div class="mc-sub">GWh netos este mes</div>
+          <div class="mc-val neg">−1.41</div>
+          <div class="mc-sub">mes parcial en curso</div>
         </div>
       </div>
     </div>
@@ -330,8 +330,8 @@
 
   <section class="charts-2">
     <div class="chart-card">
-      <div class="chart-title">📥 Captados vs 📤 Perdidos — GWh por mes</div>
-      <div class="chart-sub">Barras verdes = nuevos GWh · Barras rojas = GWh perdidos (bajas, KO, finalizados)</div>
+      <div class="chart-title">📥 Altas nuevas + Recuperaciones vs 📤 Churn — GWh por mes</div>
+      <div class="chart-sub">Verde = CUPS nuevos · Naranja = CUPS recuperados (tenían baja previa) · Rojo = churn real</div>
       <canvas id="chartCapPer"></canvas>
     </div>
     <div class="chart-card">
@@ -343,8 +343,8 @@
 
   <section class="charts-2">
     <div class="chart-card">
-      <div class="chart-title">👥 Contratos captados vs perdidos — unidades por mes</div>
-      <div class="chart-sub">Barras apiladas: azul = captados · rojo = perdidos</div>
+      <div class="chart-title">👥 Altas nuevas + Recuperaciones vs Churn — contratos por mes</div>
+      <div class="chart-sub">Verde = altas nuevas · Naranja = recuperaciones · Rojo = churn real (no volvieron)</div>
       <canvas id="chartCapPerN"></canvas>
     </div>
     <div class="chart-card">
@@ -436,18 +436,21 @@
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────
 const monthly = [
-  {m:'2025-07', cap:9.695, per:4.292, neto:5.403, n_cap:189, n_per:186, neto_n:3,   vol:19.198},
-  {m:'2025-08', cap:13.999,per:6.706, neto:7.292, n_cap:221, n_per:88,  neto_n:133, vol:26.490},
-  {m:'2025-09', cap:6.028, per:4.032, neto:1.996, n_cap:111, n_per:87,  neto_n:24,  vol:28.487},
-  {m:'2025-10', cap:15.518,per:3.326, neto:12.192,n_cap:194, n_per:69,  neto_n:125, vol:40.678},
-  {m:'2025-11', cap:11.112,per:5.673, neto:5.439, n_cap:242, n_per:83,  neto_n:159, vol:46.117},
-  {m:'2025-12', cap:11.567,per:4.435, neto:7.132, n_cap:167, n_per:119, neto_n:48,  vol:53.250},
-  {m:'2026-01', cap:8.433, per:3.050, neto:5.383, n_cap:200, n_per:72,  neto_n:128, vol:58.633},
-  {m:'2026-02', cap:11.977,per:6.242, neto:5.735, n_cap:271, n_per:116, neto_n:155, vol:64.368},
-  {m:'2026-03', cap:11.183,per:18.843,neto:-7.660,n_cap:211, n_per:268, neto_n:-57, vol:56.708},
-  {m:'2026-04', cap:7.660, per:4.775, neto:2.884, n_cap:252, n_per:67,  neto_n:185, vol:59.592},
-  {m:'2026-05', cap:23.541,per:2.983, neto:20.558,n_cap:396, n_per:78,  neto_n:318, vol:80.151},
-  {m:'2026-06', cap:3.845, per:1.641, neto:2.203, n_cap:114, n_per:65,  neto_n:49,  vol:82.354},
+  // m, g_new=altas nuevas GWh, g_rec=recuperaciones GWh, g_cap=total captados GWh,
+  // g_per=total perdidos GWh, g_chu=churn real GWh, net_g=neto GWh, vol=volumen cartera
+  // n_new, n_rec, n_cap, n_per, n_chu, net_n
+  {m:'2025-07', g_new:3.012,g_rec:0.837,g_cap:3.849,g_per:4.292,g_chu:2.867,net_g:-0.443, n_new:52, n_rec:28,n_cap:80, n_per:186,n_chu:179,net_n:-106,vol:15.925},
+  {m:'2025-08', g_new:4.715,g_rec:0.604,g_cap:5.319,g_per:6.706,g_chu:2.752,net_g:-1.387, n_new:75, n_rec:13,n_cap:88, n_per:88, n_chu:76, net_n:0,   vol:14.538},
+  {m:'2025-09', g_new:0.858,g_rec:2.313,g_cap:3.171,g_per:4.032,g_chu:3.454,net_g:-0.861, n_new:38, n_rec:5, n_cap:43, n_per:87, n_chu:83, net_n:-44,  vol:13.677},
+  {m:'2025-10', g_new:8.937,g_rec:0.464,g_cap:9.401,g_per:3.326,g_chu:2.994,net_g:6.075,  n_new:99, n_rec:5, n_cap:104,n_per:69, n_chu:63, net_n:35,   vol:19.752},
+  {m:'2025-11', g_new:3.866,g_rec:1.453,g_cap:5.319,g_per:5.673,g_chu:5.636,net_g:-0.354, n_new:108,n_rec:14,n_cap:122,n_per:83, n_chu:80, net_n:39,   vol:19.398},
+  {m:'2025-12', g_new:3.464,g_rec:0.816,g_cap:4.280,g_per:4.435,g_chu:4.087,net_g:-0.155, n_new:83, n_rec:9, n_cap:92, n_per:119,n_chu:111,net_n:-27,  vol:19.243},
+  {m:'2026-01', g_new:4.356,g_rec:0.414,g_cap:4.770,g_per:3.050,g_chu:3.048,net_g:1.720,  n_new:75, n_rec:16,n_cap:91, n_per:72, n_chu:71, net_n:19,   vol:20.963},
+  {m:'2026-02', g_new:6.596,g_rec:0.179,g_cap:6.775,g_per:6.242,g_chu:6.143,net_g:0.533,  n_new:151,n_rec:8, n_cap:159,n_per:116,n_chu:107,net_n:43,   vol:21.496},
+  {m:'2026-03', g_new:6.844,g_rec:0.481,g_cap:7.325,g_per:18.843,g_chu:18.227,net_g:-11.518,n_new:86,n_rec:17,n_cap:103,n_per:268,n_chu:252,net_n:-165, vol:9.978},
+  {m:'2026-04', g_new:3.745,g_rec:0.460,g_cap:4.205,g_per:4.775,g_chu:4.379,net_g:-0.570, n_new:139,n_rec:24,n_cap:163,n_per:67, n_chu:62, net_n:96,   vol:9.408},
+  {m:'2026-05', g_new:4.800,g_rec:0.597,g_cap:5.397,g_per:2.983,g_chu:2.934,net_g:2.414,  n_new:104,n_rec:8, n_cap:112,n_per:78, n_chu:74, net_n:34,   vol:11.822},
+  {m:'2026-06', g_new:0.173,g_rec:0.060,g_cap:0.233,g_per:1.641,g_chu:1.641,net_g:-1.408, n_new:14, n_rec:5, n_cap:19, n_per:65, n_chu:65, net_n:-46,  vol:10.414},
 ];
 
 const del_all = [
@@ -498,20 +501,23 @@ new Chart(document.getElementById('chartVol'),{
   }}
 });
 
-// ── CHART 2: Captados vs Perdidos GWh ─────────────────────────────────
+// ── CHART 2: Altas nuevas + Recuperaciones vs Churn GWh ──────────────
 new Chart(document.getElementById('chartCapPer'),{
   type:'bar',
   data:{
     labels,
     datasets:[
-      {label:'Captados GWh',data:monthly.map(x=>x.cap),
-       backgroundColor:'rgba(16,185,129,.7)',borderRadius:4},
-      {label:'Perdidos GWh',data:monthly.map(x=>-x.per),
+      {label:'Altas nuevas GWh',   data:monthly.map(x=>x.g_new),
+       backgroundColor:'rgba(16,185,129,.8)',borderRadius:4},
+      {label:'Recuperaciones GWh', data:monthly.map(x=>x.g_rec),
+       backgroundColor:'rgba(245,158,11,.75)',borderRadius:4},
+      {label:'Churn real GWh',     data:monthly.map(x=>-x.g_chu),
        backgroundColor:'rgba(239,68,68,.65)',borderRadius:4},
     ]
   },
   options:{...gOpts,scales:{...gOpts.scales,
-    y:{...gOpts.scales.y,stacked:false}
+    x:{...gOpts.scales.x,stacked:true},
+    y:{...gOpts.scales.y,stacked:true}
   }}
 });
 
@@ -522,27 +528,32 @@ new Chart(document.getElementById('chartNeto'),{
     labels,
     datasets:[{
       label:'Neto GWh',
-      data:monthly.map(x=>x.neto),
-      backgroundColor:monthly.map(x=>x.neto>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.7)'),
+      data:monthly.map(x=>x.net_g),
+      backgroundColor:monthly.map(x=>x.net_g>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.7)'),
       borderRadius:4
     }]
   },
   options:gOpts
 });
 
-// ── CHART 4: Captados vs Perdidos N ───────────────────────────────────
+// ── CHART 4: Altas nuevas + Recuperaciones vs Churn (contratos) ───────
 new Chart(document.getElementById('chartCapPerN'),{
   type:'bar',
   data:{
     labels,
     datasets:[
-      {label:'Captados',data:monthly.map(x=>x.n_cap),
-       backgroundColor:'rgba(59,126,248,.7)',borderRadius:4},
-      {label:'Perdidos',data:monthly.map(x=>-x.n_per),
-       backgroundColor:'rgba(239,68,68,.6)',borderRadius:4},
+      {label:'Altas nuevas',   data:monthly.map(x=>x.n_new),
+       backgroundColor:'rgba(16,185,129,.8)',borderRadius:4,stack:'cap'},
+      {label:'Recuperaciones', data:monthly.map(x=>x.n_rec),
+       backgroundColor:'rgba(245,158,11,.75)',borderRadius:4,stack:'cap'},
+      {label:'Churn real',     data:monthly.map(x=>-x.n_chu),
+       backgroundColor:'rgba(239,68,68,.65)',borderRadius:4,stack:'per'},
     ]
   },
-  options:gOpts
+  options:{...gOpts,scales:{...gOpts.scales,
+    x:{...gOpts.scales.x,stacked:true},
+    y:{...gOpts.scales.y,stacked:true}
+  }}
 });
 
 // ── CHART 5: Neto N ───────────────────────────────────────────────────
@@ -552,8 +563,8 @@ new Chart(document.getElementById('chartNetoN'),{
     labels,
     datasets:[{
       label:'Neto contratos',
-      data:monthly.map(x=>x.neto_n),
-      backgroundColor:monthly.map(x=>x.neto_n>=0?'rgba(59,126,248,.75)':'rgba(239,68,68,.7)'),
+      data:monthly.map(x=>x.net_n),
+      backgroundColor:monthly.map(x=>x.net_n>=0?'rgba(59,126,248,.75)':'rgba(239,68,68,.7)'),
       borderRadius:4
     }]
   },

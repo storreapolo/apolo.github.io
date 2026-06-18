@@ -210,6 +210,23 @@
   .detail-chart-card { background: var(--bg); border-radius: 8px; padding: 12px 14px; }
   .detail-chart-card canvas { max-height: 160px; }
 
+
+  /* ── TIME FILTER ── */
+  .time-filter {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px 18px; margin-bottom: 20px;
+  }
+  .time-filter label { font-size: 0.72rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .time-filter select {
+    padding: 6px 10px; border-radius: 7px; border: 1px solid var(--border);
+    font-size: 0.8rem; color: var(--text); background: var(--bg); cursor: pointer; outline: none;
+  }
+  .time-filter select:focus { border-color: var(--accent); }
+  .time-filter .tf-sep { color: var(--muted); font-size: 0.8rem; }
+  .time-filter .tf-info { margin-left: auto; font-size: 0.72rem; color: var(--muted); }
+  .time-filter .tf-info span { color: var(--accent); font-weight: 600; }
+
 </style>
 </head>
 <body>
@@ -234,6 +251,44 @@
 </div>
 
 <!-- TAB: RESUMEN GENERAL -->
+
+<!-- TIME FILTER (global, ambas pestañas) -->
+<div class="time-filter" id="timeFilter">
+  <label>📅 Período:</label>
+  <label style="font-size:.75rem;color:var(--muted)">Desde</label>
+  <select id="tfFrom" onchange="applyTimeFilter()">
+<option value="2025-07" selected>2025-07</option>
+<option value="2025-08">2025-08</option>
+<option value="2025-09">2025-09</option>
+<option value="2025-10">2025-10</option>
+<option value="2025-11">2025-11</option>
+<option value="2025-12">2025-12</option>
+<option value="2026-01">2026-01</option>
+<option value="2026-02">2026-02</option>
+<option value="2026-03">2026-03</option>
+<option value="2026-04">2026-04</option>
+<option value="2026-05">2026-05</option>
+<option value="2026-06">2026-06</option>
+  </select>
+  <span class="tf-sep">→</span>
+  <label style="font-size:.75rem;color:var(--muted)">Hasta</label>
+  <select id="tfTo" onchange="applyTimeFilter()">
+<option value="2025-07">2025-07</option>
+<option value="2025-08">2025-08</option>
+<option value="2025-09">2025-09</option>
+<option value="2025-10">2025-10</option>
+<option value="2025-11">2025-11</option>
+<option value="2025-12">2025-12</option>
+<option value="2026-01">2026-01</option>
+<option value="2026-02">2026-02</option>
+<option value="2026-03">2026-03</option>
+<option value="2026-04">2026-04</option>
+<option value="2026-05">2026-05</option>
+<option value="2026-06" selected>2026-06</option>
+  </select>
+  <div class="tf-info">Mostrando <span id="tfMonthCount">12</span> meses</div>
+</div>
+
 <div class="tab-pane active" id="tab-resumen">
 
   <!-- KPIs -->
@@ -479,94 +534,117 @@ const gOpts = {
   interaction:{mode:'index'}
 };
 
-// ── CHART 1: Volumen acumulado ─────────────────────────────────────────
-new Chart(document.getElementById('chartVol'),{
+// ── TIME FILTER STATE ─────────────────────────────────────────────────
+let tfFrom = monthly[0].m;
+let tfTo   = monthly[monthly.length-1].m;
+
+function getFiltered_m() {
+  return monthly.filter(x => x.m >= tfFrom && x.m <= tfTo);
+}
+
+// ── CHART INSTANCES ────────────────────────────────────────────────────
+const stackedScalesMain = {
+  x: {...gOpts.scales.x, stacked:true},
+  y: {...gOpts.scales.y, stacked:true}
+};
+
+const cVol = new Chart(document.getElementById('chartVol'),{
   type:'line',
-  data:{
-    labels,
-    datasets:[
-      {label:'GWh cartera activa',data:monthly.map(x=>x.vol),
-       borderColor:'#3b7ef8',backgroundColor:'rgba(59,126,248,.1)',
-       fill:true,tension:.3,pointRadius:4,borderWidth:2.5},
-      {label:'Objetivo 145 GWh',data:monthly.map(()=>145),
-       borderColor:'rgba(239,68,68,.5)',borderDash:[4,5],
-       fill:false,pointRadius:0,borderWidth:1.5},
-    ]
-  },
-  options:{...gOpts,plugins:{...gOpts.plugins,
+  data:{ labels:[], datasets:[
+    {label:'GWh cartera activa', data:[], borderColor:'#3b7ef8',
+     backgroundColor:'rgba(59,126,248,.1)', fill:true, tension:.3, pointRadius:4, borderWidth:2.5},
+    {label:'Objetivo 145 GWh', data:[], borderColor:'rgba(239,68,68,.5)',
+     borderDash:[4,5], fill:false, pointRadius:0, borderWidth:1.5},
+  ]},
+  options:{...gOpts, plugins:{...gOpts.plugins,
     tooltip:{backgroundColor:'#fff',borderColor:'#dde2ef',borderWidth:1,titleColor:'#1e2535',bodyColor:'#6b7280'}
   }}
 });
 
-// ── CHART 2: Altas nuevas + Recuperaciones vs Churn GWh ──────────────
-new Chart(document.getElementById('chartCapPer'),{
+const cCapPer = new Chart(document.getElementById('chartCapPer'),{
   type:'bar',
-  data:{
-    labels,
-    datasets:[
-      {label:'Altas nuevas GWh',  data:monthly.map(x=>x.g_new),
-       backgroundColor:'rgba(16,185,129,.8)',borderRadius:4,stack:'cap'},
-      {label:'Renovaciones GWh',  data:monthly.map(x=>x.g_ren),
-       backgroundColor:'rgba(245,158,11,.75)',borderRadius:4,stack:'cap'},
-      {label:'Churn real GWh',    data:monthly.map(x=>-x.g_chu),
-       backgroundColor:'rgba(239,68,68,.65)',borderRadius:4,stack:'per'},
-    ]
-  },
-  options:{...gOpts,scales:{...gOpts.scales,
-    x:{...gOpts.scales.x,stacked:true},
-    y:{...gOpts.scales.y,stacked:true}
-  }}
+  data:{ labels:[], datasets:[
+    {label:'Altas nuevas GWh',  data:[], backgroundColor:'rgba(16,185,129,.8)',  borderRadius:4, stack:'cap'},
+    {label:'Renovaciones GWh',  data:[], backgroundColor:'rgba(245,158,11,.75)', borderRadius:4, stack:'cap'},
+    {label:'Churn real GWh',    data:[], backgroundColor:'rgba(239,68,68,.65)',  borderRadius:4, stack:'per'},
+  ]},
+  options:{...gOpts, scales:stackedScalesMain}
 });
 
-// ── CHART 3: Neto GWh ─────────────────────────────────────────────────
-new Chart(document.getElementById('chartNeto'),{
+const cNeto = new Chart(document.getElementById('chartNeto'),{
   type:'bar',
-  data:{
-    labels,
-    datasets:[{
-      label:'Neto GWh',
-      data:monthly.map(x=>x.net_g),
-      backgroundColor:monthly.map(x=>x.net_g>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.7)'),
-      borderRadius:4
-    }]
-  },
+  data:{ labels:[], datasets:[{ label:'Neto GWh', data:[], backgroundColor:[], borderRadius:4 }]},
   options:gOpts
 });
 
-// ── CHART 4: Altas nuevas + Recuperaciones vs Churn (contratos) ───────
-new Chart(document.getElementById('chartCapPerN'),{
+const cCapPerN = new Chart(document.getElementById('chartCapPerN'),{
   type:'bar',
-  data:{
-    labels,
-    datasets:[
-      {label:'Altas nuevas',  data:monthly.map(x=>x.n_new),
-       backgroundColor:'rgba(16,185,129,.8)',borderRadius:4,stack:'cap'},
-      {label:'Renovaciones',  data:monthly.map(x=>x.n_ren),
-       backgroundColor:'rgba(245,158,11,.75)',borderRadius:4,stack:'cap'},
-      {label:'Churn real',    data:monthly.map(x=>-x.n_chu),
-       backgroundColor:'rgba(239,68,68,.65)',borderRadius:4,stack:'per'},
-    ]
-  },
-  options:{...gOpts,scales:{...gOpts.scales,
-    x:{...gOpts.scales.x,stacked:true},
-    y:{...gOpts.scales.y,stacked:true}
-  }}
+  data:{ labels:[], datasets:[
+    {label:'Altas nuevas',  data:[], backgroundColor:'rgba(16,185,129,.8)',  borderRadius:4, stack:'cap'},
+    {label:'Renovaciones',  data:[], backgroundColor:'rgba(245,158,11,.75)', borderRadius:4, stack:'cap'},
+    {label:'Churn real',    data:[], backgroundColor:'rgba(239,68,68,.65)',  borderRadius:4, stack:'per'},
+  ]},
+  options:{...gOpts, scales:stackedScalesMain}
 });
 
-// ── CHART 5: Neto N ───────────────────────────────────────────────────
-new Chart(document.getElementById('chartNetoN'),{
+const cNetoN = new Chart(document.getElementById('chartNetoN'),{
   type:'bar',
-  data:{
-    labels,
-    datasets:[{
-      label:'Neto contratos',
-      data:monthly.map(x=>x.net_n),
-      backgroundColor:monthly.map(x=>x.net_n>=0?'rgba(59,126,248,.75)':'rgba(239,68,68,.7)'),
-      borderRadius:4
-    }]
-  },
+  data:{ labels:[], datasets:[{ label:'Neto contratos', data:[], backgroundColor:[], borderRadius:4 }]},
   options:gOpts
 });
+
+// ── APPLY TIME FILTER ──────────────────────────────────────────────────
+function applyTimeFilter() {
+  tfFrom = document.getElementById('tfFrom').value;
+  tfTo   = document.getElementById('tfTo').value;
+  // Swap if inverted
+  if (tfFrom > tfTo) { const t=tfFrom; tfFrom=tfTo; tfTo=t;
+    document.getElementById('tfFrom').value=tfFrom;
+    document.getElementById('tfTo').value=tfTo; }
+
+  const fm = getFiltered_m();
+  const lbs = fm.map(x=>x.m);
+  document.getElementById('tfMonthCount').textContent = fm.length;
+
+  // Chart 1: Vol
+  cVol.data.labels = lbs;
+  cVol.data.datasets[0].data = fm.map(x=>x.vol);
+  cVol.data.datasets[1].data = fm.map(()=>145);
+  cVol.update();
+
+  // Chart 2: Cap/Per GWh
+  cCapPer.data.labels = lbs;
+  cCapPer.data.datasets[0].data = fm.map(x=>x.g_new);
+  cCapPer.data.datasets[1].data = fm.map(x=>x.g_ren);
+  cCapPer.data.datasets[2].data = fm.map(x=>-x.g_chu);
+  cCapPer.update();
+
+  // Chart 3: Neto GWh
+  cNeto.data.labels = lbs;
+  cNeto.data.datasets[0].data = fm.map(x=>x.net_g);
+  cNeto.data.datasets[0].backgroundColor = fm.map(x=>x.net_g>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.7)');
+  cNeto.update();
+
+  // Chart 4: Cap/Per N
+  cCapPerN.data.labels = lbs;
+  cCapPerN.data.datasets[0].data = fm.map(x=>x.n_new);
+  cCapPerN.data.datasets[1].data = fm.map(x=>x.n_ren);
+  cCapPerN.data.datasets[2].data = fm.map(x=>-x.n_chu);
+  cCapPerN.update();
+
+  // Chart 5: Neto N
+  cNetoN.data.labels = lbs;
+  cNetoN.data.datasets[0].data = fm.map(x=>x.net_n);
+  cNetoN.data.datasets[0].backgroundColor = fm.map(x=>x.net_n>=0?'rgba(59,126,248,.75)':'rgba(239,68,68,.7)');
+  cNetoN.update();
+
+  // Strip mes actual (keep static - shows last month always)
+  // Delegaciones: re-render cards with filtered months
+  if (delRendered) { renderCards(); }
+}
+
+// Init charts with full data
+applyTimeFilter();
 
 // ── DELEGACIONES TABLE ────────────────────────────────────────────────
 const maxG = Math.max(...del_all.map(x=>x.g));
@@ -705,11 +783,12 @@ function renderCards() {
     requestAnimationFrame(() => {
       const ctx = document.getElementById(cid);
       if (!ctx) return;
-      const netos = d.monthly.map(m => m.net_g);
+      const filtered_m = d.monthly.filter(m => m.m >= tfFrom && m.m <= tfTo);
+      const netos = filtered_m.map(m => m.net_g);
       miniChartInstances[name] = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: MESES.map(m => m.slice(5)),
+          labels: filtered_m.map(m => m.m.slice(5)),
           datasets: [{
             data: netos,
             backgroundColor: netos.map(v => v >= 0 ? 'rgba(16,185,129,.7)' : 'rgba(239,68,68,.65)'),
@@ -745,12 +824,12 @@ function openDetail(name) {
 
   // KPIs
   const lastM = d.monthly[d.monthly.length - 1];
-  const totalNew  = d.monthly.reduce((s,m) => s + m.c_n, 0);
-  const totalRen  = d.monthly.reduce((s,m) => s + m.r_n, 0);
-  const totalChu  = d.monthly.reduce((s,m) => s + m.ch_n, 0);
-  const totalNewG = d.monthly.reduce((s,m) => s + m.c_g, 0);
-  const totalRenG = d.monthly.reduce((s,m) => s + m.r_g, 0);
-  const totalChuG = d.monthly.reduce((s,m) => s + m.ch_g, 0);
+  const totalNew  = filtered_d.reduce((s,m) => s + m.c_n, 0);
+  const totalRen  = filtered_d.reduce((s,m) => s + m.r_n, 0);
+  const totalChu  = filtered_d.reduce((s,m) => s + m.ch_n, 0);
+  const totalNewG = filtered_d.reduce((s,m) => s + m.c_g, 0);
+  const totalRenG = filtered_d.reduce((s,m) => s + m.r_g, 0);
+  const totalChuG = filtered_d.reduce((s,m) => s + m.ch_g, 0);
   document.getElementById('detailKpis').innerHTML = `
     <div class="dkpi"><div class="dkpi-lbl">GWh activos</div><div class="dkpi-val" style="color:var(--accent)">${d.gwh_activos.toFixed(3)}</div></div>
     <div class="dkpi"><div class="dkpi-lbl">Contratos activos</div><div class="dkpi-val">${d.n_activos}</div></div>
@@ -761,7 +840,8 @@ function openDetail(name) {
   // Destroy previous detail charts
   Object.values(detailCharts).forEach(c => c.destroy());
 
-  const labels12 = MESES.map(m => m.slice(5));
+  const filtered_d = d.monthly.filter(m => m.m >= tfFrom && m.m <= tfTo);
+  const labels12 = filtered_d.map(m => m.m.slice(5));
   const baseOpts = {
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { labels: { color: '#6b7280', font: { size: 9 } } } },
@@ -782,9 +862,9 @@ function openDetail(name) {
   detailCharts.gwh = new Chart(document.getElementById('detailChartGWh'), {
     type: 'bar',
     data: { labels: labels12, datasets: [
-      { label: 'Altas nuevas GWh',  data: d.monthly.map(m => m.c_g),   backgroundColor: 'rgba(16,185,129,.8)',  borderRadius: 3 },
-      { label: 'Renovaciones GWh',  data: d.monthly.map(m => m.r_g),   backgroundColor: 'rgba(245,158,11,.8)', borderRadius: 3 },
-      { label: 'Churn real GWh',    data: d.monthly.map(m => -m.ch_g), backgroundColor: 'rgba(239,68,68,.7)',  borderRadius: 3 }
+      { label: 'Altas nuevas GWh',  data: filtered_d.map(m => m.c_g),   backgroundColor: 'rgba(16,185,129,.8)',  borderRadius: 3 },
+      { label: 'Renovaciones GWh',  data: filtered_d.map(m => m.r_g),   backgroundColor: 'rgba(245,158,11,.8)', borderRadius: 3 },
+      { label: 'Churn real GWh',    data: filtered_d.map(m => -m.ch_g), backgroundColor: 'rgba(239,68,68,.7)',  borderRadius: 3 }
     ]},
     options: stackedOpts
   });
@@ -793,8 +873,8 @@ function openDetail(name) {
     type: 'bar',
     data: { labels: labels12, datasets: [{
       label: 'Neto GWh',
-      data: d.monthly.map(m => m.net_g),
-      backgroundColor: d.monthly.map(m => m.net_g >= 0 ? 'rgba(59,126,248,.75)' : 'rgba(239,68,68,.65)'),
+      data: filtered_d.map(m => m.net_g),
+      backgroundColor: filtered_d.map(m => m.net_g >= 0 ? 'rgba(59,126,248,.75)' : 'rgba(239,68,68,.65)'),
       borderRadius: 3
     }]},
     options: baseOpts
@@ -803,9 +883,9 @@ function openDetail(name) {
   detailCharts.n = new Chart(document.getElementById('detailChartN'), {
     type: 'bar',
     data: { labels: labels12, datasets: [
-      { label: 'Altas nuevas',  data: d.monthly.map(m => m.c_n),   backgroundColor: 'rgba(16,185,129,.8)',  borderRadius: 3 },
-      { label: 'Renovaciones',  data: d.monthly.map(m => m.r_n),   backgroundColor: 'rgba(245,158,11,.8)', borderRadius: 3 },
-      { label: 'Churn real',    data: d.monthly.map(m => -m.ch_n), backgroundColor: 'rgba(239,68,68,.7)',  borderRadius: 3 }
+      { label: 'Altas nuevas',  data: filtered_d.map(m => m.c_n),   backgroundColor: 'rgba(16,185,129,.8)',  borderRadius: 3 },
+      { label: 'Renovaciones',  data: filtered_d.map(m => m.r_n),   backgroundColor: 'rgba(245,158,11,.8)', borderRadius: 3 },
+      { label: 'Churn real',    data: filtered_d.map(m => -m.ch_n), backgroundColor: 'rgba(239,68,68,.7)',  borderRadius: 3 }
     ]},
     options: stackedOpts
   });

@@ -3,900 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apolo Dashboard – Contratos Servicios</title>
+<title>Apolo Business – Dashboard Contratos</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
 <style>
-  :root {
-    --bg: #f4f6fb;
-    --card: #ffffff;
-    --card2: #eef1f8;
-    --border: #dde2ef;
-    --accent: #3b7ef8;
-    --green: #10b981;
-    --red: #ef4444;
-    --amber: #f59e0b;
-    --purple: #8b5cf6;
-    --text: #1e2535;
-    --muted: #6b7280;
-    --radius: 12px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
-
-  header {
-    background: #fff;
-    border-bottom: 1px solid var(--border);
-    padding: 16px 32px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .logo { display: flex; align-items: center; gap: 12px; }
-  .logo-icon {
-    width: 38px; height: 38px; border-radius: 9px;
-    background: linear-gradient(135deg, #3b7ef8, #10b981);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; font-weight: 900; color: #fff;
-  }
-  .logo h1 { font-size: 1.2rem; font-weight: 700; }
-  .logo p { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
-  .updated { font-size: 0.72rem; color: var(--muted); text-align: right; }
-  .updated span { color: var(--green); font-weight: 600; }
-
-  main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
-  section { margin-bottom: 22px; }
-
-  /* ── KPI cards ── */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
-  .kpi-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px 20px;
-    border-top: 3px solid var(--kpi-color, var(--accent));
-  }
-  .kpi-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-  .kpi-value { font-size: 1.9rem; font-weight: 800; color: var(--text); line-height: 1; }
-  .kpi-sub { font-size: 0.74rem; color: var(--muted); margin-top: 5px; }
-
-  /* ── Progress ── */
-  .progress-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 22px 26px;
-  }
-  .progress-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; }
-  .progress-header h2 { font-size: 0.95rem; font-weight: 600; }
-  .progress-pct { font-size: 2rem; font-weight: 900; color: var(--accent); }
-  .progress-track { background: var(--card2); border-radius: 99px; height: 18px; overflow: hidden; }
-  .progress-fill {
-    height: 100%; border-radius: 99px;
-    background: linear-gradient(90deg, #3b7ef8, #10b981);
-  }
-  .progress-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 7px; }
-
-  /* ── Charts grid ── */
-  .charts-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .charts-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-  .chart-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px 20px;
-  }
-  .chart-card.full { grid-column: 1 / -1; }
-  .chart-title { font-size: 0.82rem; font-weight: 600; margin-bottom: 4px; }
-  .chart-sub { font-size: 0.68rem; color: var(--muted); margin-bottom: 14px; }
-  canvas { max-height: 240px; }
-
-  /* ── Monthly metrics strip ── */
-  .metric-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
-  .metric-cell {
-    padding: 14px 18px; border-right: 1px solid var(--border);
-    background: var(--card); 
-  }
-  .metric-cell:first-child { border-radius: var(--radius) 0 0 var(--radius); }
-  .metric-cell:last-child { border-right: none; border-radius: 0 var(--radius) var(--radius) 0; }
-  .metric-strip-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .mc-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing:.05em; margin-bottom: 4px; }
-  .mc-val { font-size: 1.5rem; font-weight: 800; }
-  .mc-sub { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
-  .pos { color: var(--green); }
-  .neg { color: var(--red); }
-  .neu { color: var(--accent); }
-
-  /* ── Table ── */
-  .table-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px 20px;
-  }
-  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-  th { color: var(--muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing:.05em;
-       padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
-  td { padding: 8px 10px; border-bottom: 1px solid rgba(200,210,230,.4); }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #f8faff; }
-  .bar-bg { background: var(--card2); border-radius: 4px; height: 5px; min-width: 80px; margin-top: 5px; }
-  .bar-fill { height: 100%; border-radius: 4px; background: var(--accent); }
-  .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.67rem; font-weight: 600; }
-  .p-green { background: rgba(16,185,129,.12); color: #059669; }
-  .p-red   { background: rgba(239,68,68,.12);  color: #dc2626; }
-  .p-amber { background: rgba(245,158,11,.12); color: #d97706; }
-  .p-blue  { background: rgba(59,126,248,.12); color: #2563eb; }
-  .p-gray  { background: rgba(107,114,128,.1); color: #6b7280; }
-
-  footer { text-align:center; padding:16px; font-size:.7rem; color:var(--muted); border-top:1px solid var(--border); }
-
-  @media (max-width: 900px) {
-    main { padding: 14px; }
-    header { padding: 12px 16px; }
-    .charts-2, .charts-3 { grid-template-columns: 1fr; }
-    .chart-card.full { grid-column: 1; }
-    .metric-strip { grid-template-columns: 1fr 1fr; }
-    .metric-cell:nth-child(2) { border-right: none; }
-    .metric-cell:nth-child(2), .metric-cell:nth-child(4) { border-right: none; }
-  }
-
-  /* ── TABS ── */
-  .tab-bar {
-    display: flex; gap: 0; border-bottom: 2px solid var(--border);
-    background: #fff; padding: 0 32px; position: sticky; top: 0; z-index: 100;
-  }
-  .tab-btn {
-    padding: 14px 24px; font-size: 0.83rem; font-weight: 600; cursor: pointer;
-    border: none; background: none; color: var(--muted);
-    border-bottom: 2px solid transparent; margin-bottom: -2px;
-    transition: color .2s, border-color .2s;
-  }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .tab-btn:hover:not(.active) { color: var(--text); }
-  .tab-pane { display: none; }
-  .tab-pane.active { display: block; }
-
-  /* ── DELEGACIONES TAB ── */
-  .del-controls {
-    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
-    background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 14px 18px; margin-bottom: 18px;
-  }
-  .del-controls label { font-size: 0.75rem; font-weight: 600; color: var(--muted); }
-  .del-search {
-    flex: 1; min-width: 200px; padding: 7px 12px; border-radius: 8px;
-    border: 1px solid var(--border); font-size: 0.82rem; color: var(--text);
-    background: var(--bg); outline: none;
-  }
-  .del-search:focus { border-color: var(--accent); }
-  .sort-btn {
-    padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
-    font-size: 0.78rem; cursor: pointer; background: var(--bg); color: var(--muted);
-    font-weight: 500; transition: all .15s;
-  }
-  .sort-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-  .del-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 16px;
-  }
-  .del-card {
-    background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
-    overflow: hidden; cursor: pointer; transition: box-shadow .2s, border-color .2s;
-  }
-  .del-card:hover { box-shadow: 0 4px 20px rgba(59,126,248,.1); border-color: #b8ceff; }
-  .del-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,126,248,.2); }
-  .del-card-head {
-    padding: 14px 16px 10px; border-bottom: 1px solid var(--border);
-    background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
-  }
-  .del-name { font-size: 0.82rem; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-  .del-kpis { display: flex; gap: 16px; }
-  .del-kpi { text-align: center; }
-  .del-kpi-val { font-size: 1.2rem; font-weight: 800; color: var(--accent); }
-  .del-kpi-lbl { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing:.04em; }
-  .del-pipe-badge {
-    display: inline-block; margin-left: auto; padding: 2px 8px; border-radius: 99px;
-    font-size: 0.67rem; font-weight: 600; background: rgba(245,158,11,.12); color: #d97706;
-  }
-  .del-card-body { padding: 10px 14px 12px; }
-  .mini-chart-wrap { position: relative; height: 80px; }
-
-  /* ── DETAIL PANEL ── */
-  .del-detail {
-    background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 22px 24px; margin-bottom: 20px; display: none;
-  }
-  .del-detail.open { display: block; }
-  .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-  .detail-title { font-size: 1.1rem; font-weight: 700; }
-  .detail-close { background: var(--card2); border: none; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 1rem; color: var(--muted); }
-  .detail-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
-  .dkpi { background: var(--bg); border-radius: 8px; padding: 12px 14px; }
-  .dkpi-lbl { font-size: 0.67rem; color: var(--muted); text-transform: uppercase; letter-spacing:.05em; margin-bottom: 4px; }
-  .dkpi-val { font-size: 1.4rem; font-weight: 800; }
-  .detail-charts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-  .detail-chart-card { background: var(--bg); border-radius: 8px; padding: 12px 14px; }
-  .detail-chart-card canvas { max-height: 160px; }
-
-
-  /* ── TIME FILTER ── */
-  .time-filter {
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 12px 18px; margin-bottom: 20px;
-  }
-  .time-filter label { font-size: 0.72rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
-  .time-filter select {
-    padding: 6px 10px; border-radius: 7px; border: 1px solid var(--border);
-    font-size: 0.8rem; color: var(--text); background: var(--bg); cursor: pointer; outline: none;
-  }
-  .time-filter select:focus { border-color: var(--accent); }
-  .time-filter .tf-sep { color: var(--muted); font-size: 0.8rem; }
-  .time-filter .tf-info { margin-left: auto; font-size: 0.72rem; color: var(--muted); }
-  .time-filter .tf-info span { color: var(--accent); font-weight: 600; }
-
+:root{--bg:#0f1117;--card:#1a1d27;--card2:#22263a;--green:#22c55e;--orange:#f59e0b;--red:#ef4444;--blue:#3b82f6;--text:#e2e8f0;--muted:#94a3b8;--border:#2d3148;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px;}
+header h1{font-size:1.25rem;font-weight:700;color:#fff;}
+.upd{color:var(--muted);font-size:0.85rem;margin-left:auto;}
+.tab-bar{display:flex;gap:4px;padding:16px 24px 0;}
+.tab-btn{padding:8px 20px;border-radius:8px 8px 0 0;border:none;background:var(--card);color:var(--muted);cursor:pointer;font-size:0.9rem;font-weight:500;transition:all .2s;}
+.tab-btn.active{background:var(--card2);color:#fff;border-bottom:2px solid var(--blue);}
+.tab-pane{display:none;padding:24px;}
+.tab-pane.active{display:block;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;}
+.kpi{background:var(--card);border-radius:12px;padding:20px;border:1px solid var(--border);}
+.kpi .label{color:var(--muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.kpi .value{font-size:2rem;font-weight:700;}
+.kpi .sub{color:var(--muted);font-size:0.82rem;margin-top:4px;}
+.prog{height:8px;background:var(--border);border-radius:4px;margin-top:10px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),var(--green));}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}
+.chart-card{background:var(--card);border-radius:12px;padding:20px;border:1px solid var(--border);}
+.chart-card h3{font-size:0.88rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px;}
+.chart-card canvas{max-height:240px;}
+.filter-row{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
+.filter-row label{color:var(--muted);font-size:0.82rem;}
+.filter-row select{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:0.85rem;}
+.del-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.del-card{background:var(--card);border-radius:12px;padding:18px;border:1px solid var(--border);}
+.del-card h4{font-size:0.92rem;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.del-meta{display:flex;gap:16px;margin-bottom:12px;}
+.del-meta span{font-size:0.8rem;color:var(--muted);}
+.del-meta strong{color:var(--text);}
+@media(max-width:768px){.chart-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
-
 <header>
-  <div class="logo">
-    <div class="logo-icon">A</div>
-    <div>
-      <h1>Apolo Dashboard</h1>
-      <p>Contratos de Servicios · Energía Eléctrica</p>
-    </div>
-  </div>
-  <div class="updated">Última actualización<br><span>15 jun 2026</span></div>
+  <div style="width:36px;height:36px;background:linear-gradient(135deg,#3b82f6,#22c55e);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;color:#fff;">A</div>
+  <h1>Apolo Business · Dashboard</h1>
+  <span class="upd">Actualizado: 22/06/2026</span>
 </header>
 
-<main>
-
-<!-- TAB BAR -->
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('resumen', this)">📊 Resumen General</button>
-  <button class="tab-btn" onclick="switchTab('delegaciones', this)">🏢 Análisis Delegaciones</button>
-</div>
-
-<!-- TAB: RESUMEN GENERAL -->
-
-<!-- TIME FILTER (global, ambas pestañas) -->
-<div class="time-filter" id="timeFilter">
-  <label>📅 Período:</label>
-  <label style="font-size:.75rem;color:var(--muted)">Desde</label>
-  <select id="tfFrom" onchange="applyTimeFilter()">
-<option value="2025-07" selected>2025-07</option>
-<option value="2025-08">2025-08</option>
-<option value="2025-09">2025-09</option>
-<option value="2025-10">2025-10</option>
-<option value="2025-11">2025-11</option>
-<option value="2025-12">2025-12</option>
-<option value="2026-01">2026-01</option>
-<option value="2026-02">2026-02</option>
-<option value="2026-03">2026-03</option>
-<option value="2026-04">2026-04</option>
-<option value="2026-05">2026-05</option>
-<option value="2026-06">2026-06</option>
-  </select>
-  <span class="tf-sep">→</span>
-  <label style="font-size:.75rem;color:var(--muted)">Hasta</label>
-  <select id="tfTo" onchange="applyTimeFilter()">
-<option value="2025-07">2025-07</option>
-<option value="2025-08">2025-08</option>
-<option value="2025-09">2025-09</option>
-<option value="2025-10">2025-10</option>
-<option value="2025-11">2025-11</option>
-<option value="2025-12">2025-12</option>
-<option value="2026-01">2026-01</option>
-<option value="2026-02">2026-02</option>
-<option value="2026-03">2026-03</option>
-<option value="2026-04">2026-04</option>
-<option value="2026-05">2026-05</option>
-<option value="2026-06" selected>2026-06</option>
-  </select>
-  <div class="tf-info">Mostrando <span id="tfMonthCount">12</span> meses</div>
+  <button class="tab-btn active" onclick="switchTab('resumen',this)">📊 Resumen General</button>
+  <button class="tab-btn" onclick="switchTab('delegaciones',this)">🗂️ Delegaciones</button>
 </div>
 
 <div class="tab-pane active" id="tab-resumen">
-
-  <!-- KPIs -->
-  <section>
-    <div class="kpi-grid">
-      <div class="kpi-card" style="--kpi-color:#3b7ef8">
-        <div class="kpi-label">GWh Cartera Activa</div>
-        <div class="kpi-value">76.41</div>
-        <div class="kpi-sub">objetivo: 145 GWh · 52.7%</div>
-      </div>
-      <div class="kpi-card" style="--kpi-color:#10b981">
-        <div class="kpi-label">Contratos Activos</div>
-        <div class="kpi-value">1.567</div>
-        <div class="kpi-sub">total cartera en vigor</div>
-      </div>
-      <div class="kpi-card" style="--kpi-color:#f59e0b">
-        <div class="kpi-label">Pipeline</div>
-        <div class="kpi-value">711</div>
-        <div class="kpi-sub">33.68 GWh pendientes de firma</div>
-      </div>
-      <div class="kpi-card" style="--kpi-color:#ef4444">
-        <div class="kpi-label">GWh Restantes</div>
-        <div class="kpi-value">68.59</div>
-        <div class="kpi-sub">para alcanzar 145 GWh</div>
-      </div>
-      <div class="kpi-card" style="--kpi-color:#8b5cf6">
-        <div class="kpi-label">Total contratos</div>
-        <div class="kpi-value">4.702</div>
-        <div class="kpi-sub">historico completo</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Progress -->
-  <section>
-    <div class="progress-card">
-      <div class="progress-header">
-        <div>
-          <h2>🎯 Progreso objetivo — 145 GWh cartera activa</h2>
-          <p style="font-size:.7rem;color:var(--muted);margin-top:3px">GWh en contratos activos actualmente · 76.41 GWh conseguidos</p>
-        </div>
-        <div class="progress-pct">52.7%</div>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" style="width:52.7%"></div>
-      </div>
-      <div class="progress-labels">
-        <span>0 GWh</span>
-        <span>▼ 76.41 GWh actuales</span>
-        <span>50% · 72.5 GWh ✓</span>
-        <span>75% · 108.75 GWh</span>
-        <span>🏁 145 GWh</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Mes actual: captados / perdidos / neto / volumen -->
-  <section>
-    <p style="font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">📅 Junio 2026 (mes en curso — datos parciales)</p>
-    <div class="metric-strip-wrap">
-      <div class="metric-strip">
-        <div class="metric-cell">
-          <div class="mc-label">Altas nuevas</div>
-          <div class="mc-val pos">+14</div>
-          <div class="mc-sub">0.173 GWh nuevos CUPS</div>
-        </div>
-        <div class="metric-cell">
-          <div class="mc-label">Renovaciones</div>
-          <div class="mc-val" style="color:var(--amber)">+5</div>
-          <div class="mc-sub">0.06 GWh renovaciones</div>
-        </div>
-        <div class="metric-cell">
-          <div class="mc-label">Churn real</div>
-          <div class="mc-val neg">−38</div>
-          <div class="mc-sub">0.974 GWh churn real</div>
-        </div>
-        <div class="metric-cell">
-          <div class="mc-label">Neto GWh</div>
-          <div class="mc-val neg">-0.741</div>
-          <div class="mc-sub">mes parcial en curso</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Gráfico volumen acumulado + neto mensual -->
-  <section class="charts-2">
-    <div class="chart-card full">
-      <div class="chart-title">📈 Volumen cartera GWh — evolución mensual acumulada</div>
-      <div class="chart-sub">Estimación de GWh en cartera activa cada mes (pre-julio: 13.8 GWh base)</div>
-      <canvas id="chartVol"></canvas>
-    </div>
-  </section>
-
-  <section class="charts-2">
-    <div class="chart-card">
-      <div class="chart-title">📥 Altas nuevas + Recuperaciones vs 📤 Churn — GWh por mes</div>
-      <div class="chart-sub">Verde = altas nuevas · Naranja = renovaciones (CUPS con historial) · Rojo = churn real (CUPS sin activo)</div>
-      <canvas id="chartCapPer"></canvas>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">📊 Crecimiento neto GWh por mes</div>
-      <div class="chart-sub">Verde = crecimiento · Rojo = decrecimiento de cartera ese mes</div>
-      <canvas id="chartNeto"></canvas>
-    </div>
-  </section>
-
-  <section class="charts-2">
-    <div class="chart-card">
-      <div class="chart-title">👥 Altas nuevas + Recuperaciones vs Churn — contratos por mes</div>
-      <div class="chart-sub">Verde = altas nuevas · Naranja = renovaciones (CUPS con historial) · Rojo = churn real (CUPS sin activo)</div>
-      <canvas id="chartCapPerN"></canvas>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">📊 Neto contratos por mes (crecimiento/decrecimiento)</div>
-      <div class="chart-sub">Número neto de contratos ganados cada mes</div>
-      <canvas id="chartNetoN"></canvas>
-    </div>
-  </section>
-
-  <!-- Delegaciones -->
-  <section>
-    <div class="table-card">
-      <div class="chart-title" style="margin-bottom:14px">🏢 Ranking delegaciones — GWh cartera activa total</div>
-      <table>
-        <thead>
-          <tr><th>#</th><th>Delegación</th><th>Contratos</th><th>GWh activos</th><th>% total</th><th>Distribución</th></tr>
-        </thead>
-        <tbody id="tbodyDel"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Estados -->
-  <section class="charts-2">
-    <div class="chart-card">
-      <div class="chart-title">🍩 Distribución por estado (contratos)</div>
-      <canvas id="chartEstados"></canvas>
-    </div>
-    <div class="table-card">
-      <div class="chart-title" style="margin-bottom:14px">📋 Detalle de estados</div>
-      <table>
-        <thead><tr><th>Estado</th><th>Contratos</th><th>GWh</th></tr></thead>
-        <tbody id="tbodyEstados"></tbody>
-      </table>
-    </div>
-  </section>
-
-
-</div><!-- /tab-resumen -->
-
-<!-- TAB: DELEGACIONES -->
-<div class="tab-pane" id="tab-delegaciones">
-  <div style="padding-top:22px">
-
-    <!-- Controls -->
-    <div class="del-controls">
-      <label>Buscar:</label>
-      <input class="del-search" id="delSearch" type="text" placeholder="Nombre de delegación…" oninput="renderCards()">
-      <label style="margin-left:8px">Ordenar:</label>
-      <button class="sort-btn active" id="sort-gwh" onclick="setSort('gwh')">GWh activos ↓</button>
-      <button class="sort-btn" id="sort-n" onclick="setSort('n')">Contratos ↓</button>
-      <button class="sort-btn" id="sort-name" onclick="setSort('name')">A–Z</button>
-      <span id="del-count" style="margin-left:auto;font-size:.72rem;color:var(--muted)"></span>
-    </div>
-
-    <!-- Detail panel (shown when a card is clicked) -->
-    <div class="del-detail" id="delDetail">
-      <div class="detail-header">
-        <div class="detail-title" id="detailTitle"></div>
-        <button class="detail-close" onclick="closeDetail()">✕ Cerrar</button>
-      </div>
-      <div class="detail-kpis" id="detailKpis"></div>
-      <div class="detail-charts">
-        <div class="detail-chart-card">
-          <div style="font-size:.75rem;font-weight:600;margin-bottom:8px">GWh captados vs perdidos</div>
-          <canvas id="detailChartGWh"></canvas>
-        </div>
-        <div class="detail-chart-card">
-          <div style="font-size:.75rem;font-weight:600;margin-bottom:8px">Neto GWh por mes</div>
-          <canvas id="detailChartNeto"></canvas>
-        </div>
-        <div class="detail-chart-card">
-          <div style="font-size:.75rem;font-weight:600;margin-bottom:8px">Contratos captados vs perdidos</div>
-          <canvas id="detailChartN"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- Cards grid -->
-    <div class="del-grid" id="delGrid"></div>
-
+  <div class="filter-row">
+    <label>Desde:</label><select id="filter-from" onchange="applyFilter()"><option value="0" selected>Jul 25</option><option value="1">Ago 25</option><option value="2">Sep 25</option><option value="3">Oct 25</option><option value="4">Nov 25</option><option value="5">Dic 25</option><option value="6">Ene 26</option><option value="7">Feb 26</option><option value="8">Mar 26</option><option value="9">Abr 26</option><option value="10">May 26</option><option value="11">Jun 26</option></select>
+    <label>Hasta:</label><select id="filter-to" onchange="applyFilter()"><option value="0">Jul 25</option><option value="1">Ago 25</option><option value="2">Sep 25</option><option value="3">Oct 25</option><option value="4">Nov 25</option><option value="5">Dic 25</option><option value="6">Ene 26</option><option value="7">Feb 26</option><option value="8">Mar 26</option><option value="9">Abr 26</option><option value="10">May 26</option><option value="11" selected>Jun 26</option></select>
   </div>
-</div><!-- /tab-delegaciones -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="label">Portfolio Activo</div>
+      <div class="value" style="color:var(--blue)">76.81 <small style="font-size:1rem">GWh</small></div>
+      <div class="sub">Objetivo: 145 GWh</div>
+      <div class="prog"><div class="prog-fill" style="width:53.0%"></div></div>
+      <div class="sub" style="margin-top:6px">53.0% del objetivo</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Contratos Activos</div>
+      <div class="value" style="color:var(--green)">1,556</div>
+      <div class="sub">CUPS activos en cartera</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Pipeline</div>
+      <div class="value" style="color:var(--orange)">28.85 <small style="font-size:1rem">GWh</small></div>
+      <div class="sub">Contratos en tramitación</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Cobertura Total</div>
+      <div class="value" style="color:var(--text)">72.9%</div>
+      <div class="sub">Activo + Pipeline vs Objetivo</div>
+    </div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-card"><h3>Altas y Renovaciones por mes</h3><canvas id="chart-altas"></canvas></div>
+    <div class="chart-card"><h3>Churn por mes (contratos)</h3><canvas id="chart-churn"></canvas></div>
+    <div class="chart-card"><h3>GWh entrados por mes</h3><canvas id="chart-gwh-in"></canvas></div>
+    <div class="chart-card"><h3>GWh churn por mes</h3><canvas id="chart-gwh-churn"></canvas></div>
+  </div>
+</div>
 
-</main>
-
-<footer>Apolo Business · Dashboard actualizado el 15/06/2026 · Fuente: ContratosServicios__10_.xlsx</footer>
+<div class="tab-pane" id="tab-delegaciones">
+  <div class="filter-row">
+    <label>Desde:</label><select id="del-filter-from" onchange="renderCards()"><option value="0" selected>Jul 25</option><option value="1">Ago 25</option><option value="2">Sep 25</option><option value="3">Oct 25</option><option value="4">Nov 25</option><option value="5">Dic 25</option><option value="6">Ene 26</option><option value="7">Feb 26</option><option value="8">Mar 26</option><option value="9">Abr 26</option><option value="10">May 26</option><option value="11">Jun 26</option></select>
+    <label>Hasta:</label><select id="del-filter-to" onchange="renderCards()"><option value="0">Jul 25</option><option value="1">Ago 25</option><option value="2">Sep 25</option><option value="3">Oct 25</option><option value="4">Nov 25</option><option value="5">Dic 25</option><option value="6">Ene 26</option><option value="7">Feb 26</option><option value="8">Mar 26</option><option value="9">Abr 26</option><option value="10">May 26</option><option value="11" selected>Jun 26</option></select>
+  </div>
+  <div class="del-grid" id="del-grid"></div>
+</div>
 
 <script>
-// ── DATA ──────────────────────────────────────────────────────────────
-const monthly = [
-  {m:'2025-07',g_new:3.012,g_ren:0.837,g_cap:3.849,g_chu:1.973,g_rbj:2.319,g_per:4.292,net_g:1.876,n_new:52,n_ren:28,n_cap:80,n_chu:139,n_rbj:47,n_per:186,net_n:-59,vol:18.244},
-  {m:'2025-08',g_new:4.709,g_ren:0.61,g_cap:5.319,g_chu:2.235,g_rbj:4.471,g_per:6.706,net_g:3.084,n_new:73,n_ren:15,n_cap:88,n_chu:41,n_rbj:47,n_per:88,net_n:47,vol:21.328},
-  {m:'2025-09',g_new:0.846,g_ren:2.324,g_cap:3.17,g_chu:1.083,g_rbj:2.949,g_per:4.032,net_g:2.087,n_new:37,n_ren:6,n_cap:43,n_chu:60,n_rbj:27,n_per:87,net_n:-17,vol:23.415},
-  {m:'2025-10',g_new:8.861,g_ren:0.539,g_cap:9.4,g_chu:2.721,g_rbj:0.605,g_per:3.326,net_g:6.679,n_new:95,n_ren:9,n_cap:104,n_chu:42,n_rbj:27,n_per:69,net_n:62,vol:30.094},
-  {m:'2025-11',g_new:3.866,g_ren:1.453,g_cap:5.319,g_chu:4.049,g_rbj:1.624,g_per:5.673,net_g:1.27,n_new:108,n_ren:14,n_cap:122,n_chu:60,n_rbj:23,n_per:83,net_n:62,vol:31.364},
-  {m:'2025-12',g_new:3.464,g_ren:0.816,g_cap:4.28,g_chu:3.851,g_rbj:0.584,g_per:4.435,net_g:0.429,n_new:83,n_ren:9,n_cap:92,n_chu:96,n_rbj:23,n_per:119,net_n:-4,vol:31.793},
-  {m:'2026-01',g_new:4.303,g_ren:0.467,g_cap:4.77,g_chu:2.262,g_rbj:0.788,g_per:3.05,net_g:2.508,n_new:74,n_ren:17,n_cap:91,n_chu:50,n_rbj:22,n_per:72,net_n:41,vol:34.301},
-  {m:'2026-02',g_new:6.596,g_ren:0.179,g_cap:6.775,g_chu:5.177,g_rbj:1.065,g_per:6.242,net_g:1.598,n_new:151,n_ren:8,n_cap:159,n_chu:86,n_rbj:30,n_per:116,net_n:73,vol:35.899},
-  {m:'2026-03',g_new:6.844,g_ren:0.481,g_cap:7.325,g_chu:11.636,g_rbj:7.207,g_per:18.843,net_g:-4.311,n_new:86,n_ren:17,n_cap:103,n_chu:116,n_rbj:152,n_per:268,net_n:-13,vol:31.588},
-  {m:'2026-04',g_new:3.667,g_ren:0.538,g_cap:4.205,g_chu:4.034,g_rbj:0.741,g_per:4.775,net_g:0.171,n_new:138,n_ren:25,n_cap:163,n_chu:39,n_rbj:28,n_per:67,net_n:124,vol:31.759},
-  {m:'2026-05',g_new:4.8,g_ren:0.597,g_cap:5.397,g_chu:2.775,g_rbj:0.207,g_per:2.983,net_g:2.622,n_new:104,n_ren:8,n_cap:112,n_chu:64,n_rbj:14,n_per:78,net_n:48,vol:34.381},
-  {m:'2026-06',g_new:0.173,g_ren:0.06,g_cap:0.233,g_chu:0.974,g_rbj:0.668,g_per:1.641,net_g:-0.741,n_new:14,n_ren:5,n_cap:19,n_chu:38,n_rbj:27,n_per:65,net_n:-19,vol:33.64},
-];
-
-const del_all = [
-  {d:'CENTRAL',c:277,g:20.751},{d:'EFICAE SOLUCIONES',c:10,g:10.236},
-  {d:'ENERGAZE',c:134,g:7.271},{d:'EFERGETICA',c:56,g:5.447},
-  {d:'INST. DESARROLLO AGROENERGETICO MURCIA SL',c:4,g:3.346},{d:'SOLARBITS',c:86,g:2.893},
-  {d:'Several Energy',c:106,g:2.789},{d:'GESERVAL',c:127,g:2.325},
-  {d:'JUAN RAMON VICTORIA',c:29,g:1.847},{d:'SG Energy',c:2,g:1.807},
-];
-
-const estados = [
-  {e:'Activo',c:1567,g:76.41},{e:'Para Firma',c:298,g:14.394},
-  {e:'Finalizado',c:1020,g:41.875},{e:'Baja',c:838,g:35.69},
-  {e:'KO',c:547,g:31.598},{e:'Para Estudio',c:184,g:3.719},
-  {e:'Previo',c:84,g:6.265},{e:'Valido',c:120,g:8.362},
-  {e:'Confirmado',c:11,g:0.498},{e:'Para Tramitar',c:14,g:0.441},
-  {e:'Desestimado',c:18,g:0.474},
-];
-
-// ── CHART DEFAULTS ─────────────────────────────────────────────────────
-const labels = monthly.map(x => x.m);
-const gOpts = {
-  plugins:{legend:{labels:{color:'#6b7280',font:{size:10}}}},
-  scales:{
-    x:{ticks:{color:'#6b7280',font:{size:9}},grid:{color:'rgba(200,210,230,.5)'}},
-    y:{ticks:{color:'#6b7280',font:{size:9}},grid:{color:'rgba(200,210,230,.5)'}}
-  },
-  responsive:true,
-  interaction:{mode:'index'}
+const ALL_LABELS = ["Jul 25", "Ago 25", "Sep 25", "Oct 25", "Nov 25", "Dic 25", "Ene 26", "Feb 26", "Mar 26", "Abr 26", "May 26", "Jun 26"];
+const RAW = {
+  altas:    [64, 38, 34, 63, 102, 74, 81, 120, 78, 117, 72, 61],
+  renov:    [44, 55, 48, 31, 36, 42, 40, 46, 47, 37, 49, 95],
+  churn:    [134, 39, 60, 42, 60, 96, 49, 84, 99, 40, 62, 69],
+  gwhAltas: [4.65, 4.09, 0.87, 8.31, 3.72, 3.11, 5.01, 4.33, 6.81, 3.25, 4.33, 1.02],
+  gwhRenov: [1.46, 0.71, 3.92, 0.43, 1.65, 1.67, 3.23, 1.56, 1.32, 0.39, 1.07, 4.63],
+  gwhChurn: [1.84, 2.09, 1.08, 2.72, 4.05, 3.85, 2.2, 5.17, 9.05, 4.04, 2.77, 1.58]
 };
+const DEL_DATA = [{"nombre": "CENTRAL", "contratos": 275, "gwh": 21.03, "monthly": [{"mes": "2025-07", "altas": 3, "renovaciones": 4, "churn": 27}, {"mes": "2025-08", "altas": 0, "renovaciones": 14, "churn": 5}, {"mes": "2025-09", "altas": 3, "renovaciones": 25, "churn": 12}, {"mes": "2025-10", "altas": 21, "renovaciones": 16, "churn": 15}, {"mes": "2025-11", "altas": 2, "renovaciones": 8, "churn": 8}, {"mes": "2025-12", "altas": 4, "renovaciones": 12, "churn": 11}, {"mes": "2026-01", "altas": 7, "renovaciones": 9, "churn": 15}, {"mes": "2026-02", "altas": 15, "renovaciones": 15, "churn": 7}, {"mes": "2026-03", "altas": 22, "renovaciones": 10, "churn": 23}, {"mes": "2026-04", "altas": 5, "renovaciones": 11, "churn": 7}, {"mes": "2026-05", "altas": 3, "renovaciones": 16, "churn": 0}, {"mes": "2026-06", "altas": 7, "renovaciones": 19, "churn": 13}]}, {"nombre": "EFICAE SOLUCIONES", "contratos": 10, "gwh": 10.24, "monthly": [{"mes": "2025-07", "altas": 2, "renovaciones": 0, "churn": 0}, {"mes": "2025-08", "altas": 1, "renovaciones": 0, "churn": 0}, {"mes": "2025-09", "altas": 1, "renovaciones": 2, "churn": 0}, {"mes": "2025-10", "altas": 1, "renovaciones": 0, "churn": 1}, {"mes": "2025-11", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-12", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-01", "altas": 3, "renovaciones": 0, "churn": 0}, {"mes": "2026-02", "altas": 0, "renovaciones": 0, "churn": 1}, {"mes": "2026-03", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-04", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-05", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-06", "altas": 0, "renovaciones": 0, "churn": 0}]}, {"nombre": "ENERGAZE", "contratos": 122, "gwh": 7.45, "monthly": [{"mes": "2025-07", "altas": 22, "renovaciones": 1, "churn": 57}, {"mes": "2025-08", "altas": 7, "renovaciones": 0, "churn": 3}, {"mes": "2025-09", "altas": 0, "renovaciones": 3, "churn": 3}, {"mes": "2025-10", "altas": 7, "renovaciones": 1, "churn": 0}, {"mes": "2025-11", "altas": 5, "renovaciones": 1, "churn": 7}, {"mes": "2025-12", "altas": 6, "renovaciones": 1, "churn": 4}, {"mes": "2026-01", "altas": 14, "renovaciones": 0, "churn": 0}, {"mes": "2026-02", "altas": 15, "renovaciones": 1, "churn": 6}, {"mes": "2026-03", "altas": 5, "renovaciones": 3, "churn": 3}, {"mes": "2026-04", "altas": 6, "renovaciones": 0, "churn": 2}, {"mes": "2026-05", "altas": 3, "renovaciones": 2, "churn": 6}, {"mes": "2026-06", "altas": 9, "renovaciones": 9, "churn": 15}]}, {"nombre": "EFERGETICA", "contratos": 58, "gwh": 5.6, "monthly": [{"mes": "2025-07", "altas": 9, "renovaciones": 0, "churn": 0}, {"mes": "2025-08", "altas": 1, "renovaciones": 0, "churn": 0}, {"mes": "2025-09", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2025-10", "altas": 1, "renovaciones": 0, "churn": 1}, {"mes": "2025-11", "altas": 6, "renovaciones": 0, "churn": 7}, {"mes": "2025-12", "altas": 5, "renovaciones": 1, "churn": 0}, {"mes": "2026-01", "altas": 4, "renovaciones": 0, "churn": 1}, {"mes": "2026-02", "altas": 3, "renovaciones": 0, "churn": 0}, {"mes": "2026-03", "altas": 0, "renovaciones": 2, "churn": 5}, {"mes": "2026-04", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2026-05", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-06", "altas": 5, "renovaciones": 1, "churn": 0}]}, {"nombre": "SOLARBITS", "contratos": 84, "gwh": 2.79, "monthly": [{"mes": "2025-07", "altas": 13, "renovaciones": 1, "churn": 9}, {"mes": "2025-08", "altas": 8, "renovaciones": 0, "churn": 3}, {"mes": "2025-09", "altas": 10, "renovaciones": 1, "churn": 11}, {"mes": "2025-10", "altas": 13, "renovaciones": 0, "churn": 1}, {"mes": "2025-11", "altas": 9, "renovaciones": 1, "churn": 2}, {"mes": "2025-12", "altas": 1, "renovaciones": 0, "churn": 39}, {"mes": "2026-01", "altas": 0, "renovaciones": 0, "churn": 6}, {"mes": "2026-02", "altas": 6, "renovaciones": 2, "churn": 3}, {"mes": "2026-03", "altas": 0, "renovaciones": 0, "churn": 3}, {"mes": "2026-04", "altas": 0, "renovaciones": 0, "churn": 3}, {"mes": "2026-05", "altas": 0, "renovaciones": 2, "churn": 2}, {"mes": "2026-06", "altas": 0, "renovaciones": 6, "churn": 3}]}, {"nombre": "Several Energy", "contratos": 105, "gwh": 2.72, "monthly": [{"mes": "2025-07", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-08", "altas": 6, "renovaciones": 0, "churn": 1}, {"mes": "2025-09", "altas": 4, "renovaciones": 0, "churn": 2}, {"mes": "2025-10", "altas": 3, "renovaciones": 2, "churn": 6}, {"mes": "2025-11", "altas": 9, "renovaciones": 2, "churn": 2}, {"mes": "2025-12", "altas": 13, "renovaciones": 0, "churn": 5}, {"mes": "2026-01", "altas": 13, "renovaciones": 0, "churn": 7}, {"mes": "2026-02", "altas": 14, "renovaciones": 1, "churn": 30}, {"mes": "2026-03", "altas": 24, "renovaciones": 0, "churn": 14}, {"mes": "2026-04", "altas": 2, "renovaciones": 0, "churn": 9}, {"mes": "2026-05", "altas": 7, "renovaciones": 5, "churn": 9}, {"mes": "2026-06", "altas": 0, "renovaciones": 0, "churn": 4}]}, {"nombre": "GESERVAL", "contratos": 127, "gwh": 2.49, "monthly": [{"mes": "2025-07", "altas": 0, "renovaciones": 2, "churn": 1}, {"mes": "2025-08", "altas": 0, "renovaciones": 7, "churn": 2}, {"mes": "2025-09", "altas": 4, "renovaciones": 1, "churn": 4}, {"mes": "2025-10", "altas": 4, "renovaciones": 3, "churn": 5}, {"mes": "2025-11", "altas": 8, "renovaciones": 4, "churn": 7}, {"mes": "2025-12", "altas": 3, "renovaciones": 7, "churn": 2}, {"mes": "2026-01", "altas": 15, "renovaciones": 5, "churn": 1}, {"mes": "2026-02", "altas": 12, "renovaciones": 6, "churn": 7}, {"mes": "2026-03", "altas": 0, "renovaciones": 2, "churn": 7}, {"mes": "2026-04", "altas": 1, "renovaciones": 8, "churn": 2}, {"mes": "2026-05", "altas": 5, "renovaciones": 6, "churn": 12}, {"mes": "2026-06", "altas": 3, "renovaciones": 17, "churn": 6}]}, {"nombre": "JUAN RAMON VICTORIA LOPEZ", "contratos": 28, "gwh": 1.79, "monthly": [{"mes": "2025-07", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-08", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-09", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-10", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2025-11", "altas": 3, "renovaciones": 0, "churn": 0}, {"mes": "2025-12", "altas": 3, "renovaciones": 0, "churn": 0}, {"mes": "2026-01", "altas": 2, "renovaciones": 0, "churn": 0}, {"mes": "2026-02", "altas": 4, "renovaciones": 0, "churn": 1}, {"mes": "2026-03", "altas": 6, "renovaciones": 1, "churn": 6}, {"mes": "2026-04", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-05", "altas": 4, "renovaciones": 0, "churn": 2}, {"mes": "2026-06", "altas": 3, "renovaciones": 1, "churn": 1}]}, {"nombre": "ECOHORTICOLA", "contratos": 17, "gwh": 1.68, "monthly": [{"mes": "2025-07", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-08", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-09", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-10", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-11", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-12", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-01", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-02", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-03", "altas": 2, "renovaciones": 0, "churn": 0}, {"mes": "2026-04", "altas": 4, "renovaciones": 0, "churn": 1}, {"mes": "2026-05", "altas": 1, "renovaciones": 0, "churn": 1}, {"mes": "2026-06", "altas": 9, "renovaciones": 1, "churn": 2}]}, {"nombre": "CANARIAS", "contratos": 28, "gwh": 1.27, "monthly": [{"mes": "2025-07", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-08", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2025-09", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-10", "altas": 0, "renovaciones": 2, "churn": 0}, {"mes": "2025-11", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2025-12", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2026-01", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2026-02", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-03", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-04", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2026-05", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2026-06", "altas": 0, "renovaciones": 20, "churn": 0}]}, {"nombre": "AHORRO DIRECT SL ", "contratos": 29, "gwh": 1.22, "monthly": [{"mes": "2025-07", "altas": 3, "renovaciones": 21, "churn": 1}, {"mes": "2025-08", "altas": 0, "renovaciones": 0, "churn": 1}, {"mes": "2025-09", "altas": 0, "renovaciones": 3, "churn": 1}, {"mes": "2025-10", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2025-11", "altas": 0, "renovaciones": 0, "churn": 3}, {"mes": "2025-12", "altas": 0, "renovaciones": 0, "churn": 1}, {"mes": "2026-01", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-02", "altas": 0, "renovaciones": 0, "churn": 2}, {"mes": "2026-03", "altas": 0, "renovaciones": 0, "churn": 4}, {"mes": "2026-04", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-05", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-06", "altas": 0, "renovaciones": 0, "churn": 0}]}, {"nombre": "ANDRES BENZAL", "contratos": 32, "gwh": 1.22, "monthly": [{"mes": "2025-07", "altas": 1, "renovaciones": 8, "churn": 1}, {"mes": "2025-08", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-09", "altas": 0, "renovaciones": 0, "churn": 1}, {"mes": "2025-10", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-11", "altas": 2, "renovaciones": 0, "churn": 0}, {"mes": "2025-12", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2026-01", "altas": 1, "renovaciones": 10, "churn": 0}, {"mes": "2026-02", "altas": 0, "renovaciones": 2, "churn": 3}, {"mes": "2026-03", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-04", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-05", "altas": 0, "renovaciones": 1, "churn": 0}, {"mes": "2026-06", "altas": 0, "renovaciones": 1, "churn": 0}]}, {"nombre": "ENERGY POINT", "contratos": 87, "gwh": 1.2, "monthly": [{"mes": "2025-07", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-08", "altas": 11, "renovaciones": 6, "churn": 0}, {"mes": "2025-09", "altas": 2, "renovaciones": 0, "churn": 0}, {"mes": "2025-10", "altas": 8, "renovaciones": 1, "churn": 0}, {"mes": "2025-11", "altas": 21, "renovaciones": 0, "churn": 0}, {"mes": "2025-12", "altas": 1, "renovaciones": 0, "churn": 0}, {"mes": "2026-01", "altas": 1, "renovaciones": 2, "churn": 0}, {"mes": "2026-02", "altas": 19, "renovaciones": 4, "churn": 1}, {"mes": "2026-03", "altas": 4, "renovaciones": 4, "churn": 2}, {"mes": "2026-04", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-05", "altas": 0, "renovaciones": 3, "churn": 0}, {"mes": "2026-06", "altas": 0, "renovaciones": 0, "churn": 0}]}, {"nombre": "Ahorra Luz FG", "contratos": 69, "gwh": 0.8, "monthly": [{"mes": "2025-07", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-08", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-09", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-10", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-11", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-12", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-01", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-02", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-03", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-04", "altas": 67, "renovaciones": 1, "churn": 0}, {"mes": "2026-05", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-06", "altas": 1, "renovaciones": 0, "churn": 0}]}, {"nombre": "ALVARO", "contratos": 5, "gwh": 0.65, "monthly": [{"mes": "2025-07", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-08", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-09", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-10", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-11", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2025-12", "altas": 0, "renovaciones": 2, "churn": 0}, {"mes": "2026-01", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-02", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-03", "altas": 0, "renovaciones": 3, "churn": 2}, {"mes": "2026-04", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-05", "altas": 0, "renovaciones": 0, "churn": 0}, {"mes": "2026-06", "altas": 0, "renovaciones": 0, "churn": 0}]}];
 
-// ── TIME FILTER STATE ─────────────────────────────────────────────────
-let tfFrom = monthly[0].m;
-let tfTo   = monthly[monthly.length-1].m;
+let charts = {};
 
-function getFiltered_m() {
-  return monthly.filter(x => x.m >= tfFrom && x.m <= tfTo);
-}
-
-// ── CHART INSTANCES ────────────────────────────────────────────────────
-const stackedScalesMain = {
-  x: {...gOpts.scales.x, stacked:true},
-  y: {...gOpts.scales.y, stacked:true}
-};
-
-const cVol = new Chart(document.getElementById('chartVol'),{
-  type:'line',
-  data:{ labels:[], datasets:[
-    {label:'GWh cartera activa', data:[], borderColor:'#3b7ef8',
-     backgroundColor:'rgba(59,126,248,.1)', fill:true, tension:.3, pointRadius:4, borderWidth:2.5},
-    {label:'Objetivo 145 GWh', data:[], borderColor:'rgba(239,68,68,.5)',
-     borderDash:[4,5], fill:false, pointRadius:0, borderWidth:1.5},
-  ]},
-  options:{...gOpts, plugins:{...gOpts.plugins,
-    tooltip:{backgroundColor:'#fff',borderColor:'#dde2ef',borderWidth:1,titleColor:'#1e2535',bodyColor:'#6b7280'}
-  }}
-});
-
-const cCapPer = new Chart(document.getElementById('chartCapPer'),{
-  type:'bar',
-  data:{ labels:[], datasets:[
-    {label:'Altas nuevas GWh',  data:[], backgroundColor:'rgba(16,185,129,.8)',  borderRadius:4, stack:'cap'},
-    {label:'Renovaciones GWh',  data:[], backgroundColor:'rgba(245,158,11,.75)', borderRadius:4, stack:'cap'},
-    {label:'Churn real GWh',    data:[], backgroundColor:'rgba(239,68,68,.65)',  borderRadius:4, stack:'per'},
-  ]},
-  options:{...gOpts, scales:stackedScalesMain}
-});
-
-const cNeto = new Chart(document.getElementById('chartNeto'),{
-  type:'bar',
-  data:{ labels:[], datasets:[{ label:'Neto GWh', data:[], backgroundColor:[], borderRadius:4 }]},
-  options:gOpts
-});
-
-const cCapPerN = new Chart(document.getElementById('chartCapPerN'),{
-  type:'bar',
-  data:{ labels:[], datasets:[
-    {label:'Altas nuevas',  data:[], backgroundColor:'rgba(16,185,129,.8)',  borderRadius:4, stack:'cap'},
-    {label:'Renovaciones',  data:[], backgroundColor:'rgba(245,158,11,.75)', borderRadius:4, stack:'cap'},
-    {label:'Churn real',    data:[], backgroundColor:'rgba(239,68,68,.65)',  borderRadius:4, stack:'per'},
-  ]},
-  options:{...gOpts, scales:stackedScalesMain}
-});
-
-const cNetoN = new Chart(document.getElementById('chartNetoN'),{
-  type:'bar',
-  data:{ labels:[], datasets:[{ label:'Neto contratos', data:[], backgroundColor:[], borderRadius:4 }]},
-  options:gOpts
-});
-
-// ── APPLY TIME FILTER ──────────────────────────────────────────────────
-function applyTimeFilter() {
-  tfFrom = document.getElementById('tfFrom').value;
-  tfTo   = document.getElementById('tfTo').value;
-  // Swap if inverted
-  if (tfFrom > tfTo) { const t=tfFrom; tfFrom=tfTo; tfTo=t;
-    document.getElementById('tfFrom').value=tfFrom;
-    document.getElementById('tfTo').value=tfTo; }
-
-  const fm = getFiltered_m();
-  const lbs = fm.map(x=>x.m);
-  document.getElementById('tfMonthCount').textContent = fm.length;
-
-  // Chart 1: Vol
-  cVol.data.labels = lbs;
-  cVol.data.datasets[0].data = fm.map(x=>x.vol);
-  cVol.data.datasets[1].data = fm.map(()=>145);
-  cVol.update();
-
-  // Chart 2: Cap/Per GWh
-  cCapPer.data.labels = lbs;
-  cCapPer.data.datasets[0].data = fm.map(x=>x.g_new);
-  cCapPer.data.datasets[1].data = fm.map(x=>x.g_ren);
-  cCapPer.data.datasets[2].data = fm.map(x=>-x.g_chu);
-  cCapPer.update();
-
-  // Chart 3: Neto GWh
-  cNeto.data.labels = lbs;
-  cNeto.data.datasets[0].data = fm.map(x=>x.net_g);
-  cNeto.data.datasets[0].backgroundColor = fm.map(x=>x.net_g>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.7)');
-  cNeto.update();
-
-  // Chart 4: Cap/Per N
-  cCapPerN.data.labels = lbs;
-  cCapPerN.data.datasets[0].data = fm.map(x=>x.n_new);
-  cCapPerN.data.datasets[1].data = fm.map(x=>x.n_ren);
-  cCapPerN.data.datasets[2].data = fm.map(x=>-x.n_chu);
-  cCapPerN.update();
-
-  // Chart 5: Neto N
-  cNetoN.data.labels = lbs;
-  cNetoN.data.datasets[0].data = fm.map(x=>x.net_n);
-  cNetoN.data.datasets[0].backgroundColor = fm.map(x=>x.net_n>=0?'rgba(59,126,248,.75)':'rgba(239,68,68,.7)');
-  cNetoN.update();
-
-  // Strip mes actual (keep static - shows last month always)
-  // Delegaciones: re-render cards with filtered months
-  if (delRendered) { renderCards(); }
-}
-
-// Init charts with full data
-applyTimeFilter();
-
-// ── DELEGACIONES TABLE ────────────────────────────────────────────────
-const maxG = Math.max(...del_all.map(x=>x.g));
-const totalG = del_all.reduce((s,x)=>s+x.g,0);
-document.getElementById('tbodyDel').innerHTML = del_all.map((r,i)=>`
-  <tr>
-    <td style="color:var(--muted)">${i+1}</td>
-    <td style="font-weight:500">${r.d}</td>
-    <td>${r.c}</td>
-    <td style="color:#3b7ef8;font-weight:700">${r.g.toFixed(3)}</td>
-    <td style="color:var(--muted)">${(r.g/totalG*100).toFixed(1)}%</td>
-    <td><div class="bar-bg"><div class="bar-fill" style="width:${(r.g/maxG*100).toFixed(1)}%"></div></div></td>
-  </tr>`).join('');
-
-// ── ESTADOS DONUT ─────────────────────────────────────────────────────
-const estColors = {
-  'Activo':'#10b981','Para Firma':'#f59e0b','Para Estudio':'#8b5cf6',
-  'Valido':'#3b7ef8','Previo':'#fb923c','Confirmado':'#4ade80',
-  'Para Tramitar':'#c084fc','Finalizado':'#94a3b8','Baja':'#f87171',
-  'KO':'#ef4444','Desestimado':'#9ca3af'
-};
-const estShow = estados.filter(x=>x.c>5);
-new Chart(document.getElementById('chartEstados'),{
-  type:'doughnut',
-  data:{
-    labels:estShow.map(x=>x.e),
-    datasets:[{data:estShow.map(x=>x.c),
-      backgroundColor:estShow.map(x=>estColors[x.e]||'#3b7ef8'),
-      borderColor:'#fff',borderWidth:2}]
-  },
-  options:{responsive:true,
-    plugins:{legend:{position:'right',labels:{color:'#6b7280',font:{size:10},padding:8}}}}
-});
-
-// ── ESTADOS TABLE ─────────────────────────────────────────────────────
-const pillCls = {
-  'Activo':'p-green','Para Firma':'p-amber','Para Estudio':'p-amber',
-  'Valido':'p-blue','Previo':'p-amber','Confirmado':'p-green',
-  'Para Tramitar':'p-amber','Finalizado':'p-gray','Baja':'p-red','KO':'p-red','Desestimado':'p-gray'
-};
-document.getElementById('tbodyEstados').innerHTML = estados.sort((a,b)=>b.c-a.c).map(r=>`
-  <tr>
-    <td><span class="pill ${pillCls[r.e]||'p-gray'}">${r.e}</span></td>
-    <td style="font-weight:600">${r.c.toLocaleString('es-ES')}</td>
-    <td style="color:#3b7ef8">${r.g.toFixed(2)}</td>
-  </tr>`).join('');
-</script>
-<script>
-// ═══════════════════════════════════════════════════
-// TAB SWITCHING
-// ═══════════════════════════════════════════════════
 function switchTab(name, btn) {
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
   btn.classList.add('active');
-  if (name === 'delegaciones' && !delRendered) { renderCards(); delRendered = true; }
+  if(name==='delegaciones') renderCards();
 }
 
-// ═══════════════════════════════════════════════════
-// DELEGACIONES DATA
-// ═══════════════════════════════════════════════════
-const DEL_DATA = {"meses":["2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06"],"delegaciones":{"CENTRAL":{"gwh_activos":20.751,"n_activos":277,"gwh_pipe":8.047,"n_pipe":129,"monthly":[{"m":"2025-07","c_n":5,"c_g":0.038,"r_n":3,"r_g":0.078,"ch_n":28,"ch_g":0.076,"net_n":-20,"net_g":0.04},{"m":"2025-08","c_n":8,"c_g":0.269,"r_n":8,"r_g":0.558,"ch_n":7,"ch_g":0.608,"net_n":9,"net_g":0.219},{"m":"2025-09","c_n":4,"c_g":0.019,"r_n":0,"r_g":0.0,"ch_n":12,"ch_g":0.094,"net_n":-8,"net_g":-0.075},{"m":"2025-10","c_n":22,"c_g":3.997,"r_n":3,"r_g":0.462,"ch_n":15,"ch_g":1.793,"net_n":10,"net_g":2.667},{"m":"2025-11","c_n":5,"c_g":0.064,"r_n":1,"r_g":0.003,"ch_n":8,"ch_g":1.088,"net_n":-2,"net_g":-1.021},{"m":"2025-12","c_n":5,"c_g":0.044,"r_n":3,"r_g":0.156,"ch_n":11,"ch_g":0.448,"net_n":-3,"net_g":-0.248},{"m":"2026-01","c_n":9,"c_g":0.161,"r_n":2,"r_g":0.065,"ch_n":15,"ch_g":0.779,"net_n":-4,"net_g":-0.553},{"m":"2026-02","c_n":18,"c_g":2.378,"r_n":1,"r_g":0.01,"ch_n":8,"ch_g":0.165,"net_n":11,"net_g":2.224},{"m":"2026-03","c_n":19,"c_g":4.931,"r_n":8,"r_g":0.29,"ch_n":31,"ch_g":2.363,"net_n":-4,"net_g":2.857},{"m":"2026-04","c_n":6,"c_g":0.02,"r_n":8,"r_g":0.234,"ch_n":6,"ch_g":0.084,"net_n":8,"net_g":0.17},{"m":"2026-05","c_n":5,"c_g":0.082,"r_n":1,"r_g":0.179,"ch_n":0,"ch_g":0.0,"net_n":6,"net_g":0.261},{"m":"2026-06","c_n":4,"c_g":0.042,"r_n":2,"r_g":0.032,"ch_n":10,"ch_g":0.125,"net_n":-4,"net_g":-0.051}]},"EFICAE SOLUCIONES":{"gwh_activos":10.236,"n_activos":10,"gwh_pipe":1.74,"n_pipe":3,"monthly":[{"m":"2025-07","c_n":2,"c_g":0.077,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.077},{"m":"2025-08","c_n":1,"c_g":3.128,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":3.128},{"m":"2025-09","c_n":1,"c_g":0.146,"r_n":2,"r_g":2.28,"ch_n":0,"ch_g":0.0,"net_n":3,"net_g":2.426},{"m":"2025-10","c_n":1,"c_g":1.663,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.195,"net_n":0,"net_g":1.468},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":3,"c_g":2.942,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":3,"net_g":2.942},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":1.024,"net_n":-1,"net_g":-1.024},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"ENERGAZE":{"gwh_activos":7.271,"n_activos":134,"gwh_pipe":4.77,"n_pipe":43,"monthly":[{"m":"2025-07","c_n":14,"c_g":1.556,"r_n":0,"r_g":0.0,"ch_n":57,"ch_g":0.294,"net_n":-43,"net_g":1.262},{"m":"2025-08","c_n":7,"c_g":0.349,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.214,"net_n":4,"net_g":0.136},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.014,"net_n":-3,"net_g":-0.014},{"m":"2025-10","c_n":8,"c_g":0.389,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":8,"net_g":0.389},{"m":"2025-11","c_n":7,"c_g":0.352,"r_n":0,"r_g":0.0,"ch_n":7,"ch_g":0.074,"net_n":0,"net_g":0.278},{"m":"2025-12","c_n":6,"c_g":0.351,"r_n":0,"r_g":0.0,"ch_n":4,"ch_g":0.08,"net_n":2,"net_g":0.271},{"m":"2026-01","c_n":15,"c_g":0.535,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":15,"net_g":0.535},{"m":"2026-02","c_n":15,"c_g":0.754,"r_n":1,"r_g":0.095,"ch_n":6,"ch_g":0.226,"net_n":10,"net_g":0.623},{"m":"2026-03","c_n":12,"c_g":0.795,"r_n":1,"r_g":0.065,"ch_n":3,"ch_g":0.165,"net_n":10,"net_g":0.695},{"m":"2026-04","c_n":6,"c_g":0.264,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.137,"net_n":4,"net_g":0.127},{"m":"2026-05","c_n":23,"c_g":0.137,"r_n":0,"r_g":0.0,"ch_n":8,"ch_g":0.164,"net_n":15,"net_g":-0.027},{"m":"2026-06","c_n":2,"c_g":0.074,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.232,"net_n":-1,"net_g":-0.158}]},"EFERGETICA":{"gwh_activos":5.447,"n_activos":56,"gwh_pipe":3.746,"n_pipe":43,"monthly":[{"m":"2025-07","c_n":1,"c_g":0.02,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.02},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.011,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.011},{"m":"2025-10","c_n":3,"c_g":0.185,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.084,"net_n":2,"net_g":0.101},{"m":"2025-11","c_n":5,"c_g":2.065,"r_n":0,"r_g":0.0,"ch_n":7,"ch_g":0.499,"net_n":-2,"net_g":1.566},{"m":"2025-12","c_n":8,"c_g":0.883,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":8,"net_g":0.883},{"m":"2026-01","c_n":1,"c_g":0.002,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.031,"net_n":0,"net_g":-0.029},{"m":"2026-02","c_n":3,"c_g":0.053,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":3,"net_g":0.053},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":2,"r_g":0.017,"ch_n":5,"ch_g":0.654,"net_n":-3,"net_g":-0.638},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.006,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.006},{"m":"2026-05","c_n":3,"c_g":0.255,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":3,"net_g":0.255},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"INSTITUTO DE DESARROLLO AGROENERGETICOS DE LA REGION DE MURCIA SL":{"gwh_activos":3.346,"n_activos":4,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":2,"c_g":0.008,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.008},{"m":"2026-05","c_n":2,"c_g":3.339,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":3.339},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"SOLARBITS":{"gwh_activos":2.893,"n_activos":86,"gwh_pipe":0.747,"n_pipe":34,"monthly":[{"m":"2025-07","c_n":15,"c_g":0.246,"r_n":0,"r_g":0.0,"ch_n":9,"ch_g":0.154,"net_n":6,"net_g":0.092},{"m":"2025-08","c_n":9,"c_g":0.187,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.037,"net_n":6,"net_g":0.15},{"m":"2025-09","c_n":8,"c_g":0.333,"r_n":0,"r_g":0.0,"ch_n":11,"ch_g":0.183,"net_n":-3,"net_g":0.15},{"m":"2025-10","c_n":19,"c_g":0.655,"r_n":1,"r_g":0.004,"ch_n":1,"ch_g":0.003,"net_n":19,"net_g":0.657},{"m":"2025-11","c_n":2,"c_g":0.002,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.196,"net_n":0,"net_g":-0.194},{"m":"2025-12","c_n":1,"c_g":0.113,"r_n":0,"r_g":0.0,"ch_n":39,"ch_g":2.527,"net_n":-38,"net_g":-2.414},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":6,"ch_g":0.339,"net_n":-6,"net_g":-0.339},{"m":"2026-02","c_n":8,"c_g":0.796,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.163,"net_n":5,"net_g":0.633},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.041,"net_n":-3,"net_g":-0.041},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":2.708,"net_n":-3,"net_g":-2.708},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.132,"net_n":-2,"net_g":-0.132},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.129,"net_n":-1,"net_g":-0.129}]},"Several Energy":{"gwh_activos":2.789,"n_activos":106,"gwh_pipe":0.332,"n_pipe":10,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":9,"c_g":0.556,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.005,"net_n":8,"net_g":0.551},{"m":"2025-09","c_n":5,"c_g":0.11,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.076,"net_n":3,"net_g":0.034},{"m":"2025-10","c_n":3,"c_g":0.073,"r_n":1,"r_g":0.07,"ch_n":6,"ch_g":0.239,"net_n":-2,"net_g":-0.095},{"m":"2025-11","c_n":9,"c_g":0.507,"r_n":1,"r_g":0.002,"ch_n":2,"ch_g":0.023,"net_n":8,"net_g":0.487},{"m":"2025-12","c_n":15,"c_g":0.211,"r_n":0,"r_g":0.0,"ch_n":5,"ch_g":0.559,"net_n":10,"net_g":-0.347},{"m":"2026-01","c_n":10,"c_g":0.129,"r_n":0,"r_g":0.0,"ch_n":7,"ch_g":0.23,"net_n":3,"net_g":-0.101},{"m":"2026-02","c_n":28,"c_g":0.5,"r_n":0,"r_g":0.0,"ch_n":30,"ch_g":0.999,"net_n":-2,"net_g":-0.499},{"m":"2026-03","c_n":14,"c_g":0.193,"r_n":0,"r_g":0.0,"ch_n":14,"ch_g":0.36,"net_n":0,"net_g":-0.167},{"m":"2026-04","c_n":5,"c_g":0.029,"r_n":0,"r_g":0.0,"ch_n":9,"ch_g":0.381,"net_n":-4,"net_g":-0.352},{"m":"2026-05","c_n":1,"c_g":0.013,"r_n":5,"r_g":0.396,"ch_n":9,"ch_g":0.288,"net_n":-3,"net_g":0.12},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.018,"net_n":-3,"net_g":-0.018}]},"GESERVAL":{"gwh_activos":2.325,"n_activos":127,"gwh_pipe":2.034,"n_pipe":83,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.132,"ch_n":1,"ch_g":0.003,"net_n":0,"net_g":0.129},{"m":"2025-08","c_n":2,"c_g":0.003,"r_n":3,"r_g":0.028,"ch_n":2,"ch_g":0.009,"net_n":3,"net_g":0.022},{"m":"2025-09","c_n":4,"c_g":0.022,"r_n":1,"r_g":0.001,"ch_n":4,"ch_g":0.136,"net_n":1,"net_g":-0.113},{"m":"2025-10","c_n":7,"c_g":0.028,"r_n":2,"r_g":0.002,"ch_n":5,"ch_g":0.068,"net_n":4,"net_g":-0.039},{"m":"2025-11","c_n":8,"c_g":0.271,"r_n":2,"r_g":0.003,"ch_n":7,"ch_g":0.129,"net_n":3,"net_g":0.145},{"m":"2025-12","c_n":3,"c_g":0.037,"r_n":5,"r_g":0.651,"ch_n":2,"ch_g":0.007,"net_n":6,"net_g":0.682},{"m":"2026-01","c_n":15,"c_g":0.261,"r_n":1,"r_g":0.009,"ch_n":1,"ch_g":0.001,"net_n":15,"net_g":0.269},{"m":"2026-02","c_n":12,"c_g":0.063,"r_n":3,"r_g":0.013,"ch_n":8,"ch_g":0.023,"net_n":7,"net_g":0.053},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":7,"ch_g":0.165,"net_n":-7,"net_g":-0.165},{"m":"2026-04","c_n":4,"c_g":0.113,"r_n":8,"r_g":0.04,"ch_n":2,"ch_g":0.223,"net_n":10,"net_g":-0.069},{"m":"2026-05","c_n":5,"c_g":0.014,"r_n":0,"r_g":0.0,"ch_n":12,"ch_g":0.047,"net_n":-7,"net_g":-0.033},{"m":"2026-06","c_n":2,"c_g":0.002,"r_n":0,"r_g":0.0,"ch_n":6,"ch_g":0.068,"net_n":-4,"net_g":-0.066}]},"JUAN RAMON VICTORIA LOPEZ":{"gwh_activos":1.847,"n_activos":29,"gwh_pipe":2.046,"n_pipe":34,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":1,"c_g":0.014,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.014},{"m":"2025-11","c_n":3,"c_g":0.227,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":3,"net_g":0.227},{"m":"2025-12","c_n":4,"c_g":0.527,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":4,"net_g":0.527},{"m":"2026-01","c_n":1,"c_g":0.046,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.046},{"m":"2026-02","c_n":4,"c_g":0.42,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.004,"net_n":3,"net_g":0.416},{"m":"2026-03","c_n":7,"c_g":0.314,"r_n":1,"r_g":0.002,"ch_n":6,"ch_g":0.303,"net_n":2,"net_g":0.014},{"m":"2026-04","c_n":4,"c_g":0.157,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":4,"net_g":0.157},{"m":"2026-05","c_n":4,"c_g":0.14,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.937,"net_n":2,"net_g":-0.797},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"SG Energy (santiago gonzalez)":{"gwh_activos":1.807,"n_activos":2,"gwh_pipe":1.765,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":1,"c_g":0.245,"r_n":0,"r_g":0.0,"ch_n":4,"ch_g":0.201,"net_n":-3,"net_g":0.044},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.126,"net_n":-2,"net_g":-0.126},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"ECOHORTICOLA":{"gwh_activos":1.663,"n_activos":13,"gwh_pipe":0.252,"n_pipe":13,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":2,"c_g":0.002,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.002},{"m":"2026-04","c_n":4,"c_g":1.621,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.0,"net_n":3,"net_g":1.621},{"m":"2026-05","c_n":6,"c_g":0.035,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.0,"net_n":5,"net_g":0.035},{"m":"2026-06","c_n":1,"c_g":0.005,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.009,"net_n":-1,"net_g":-0.005}]},"CANARIAS":{"gwh_activos":1.313,"n_activos":28,"gwh_pipe":1.121,"n_pipe":20,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.002,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.002},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.029,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.029},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.031,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.031},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":2,"r_g":0.043,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.043},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"AHORRO DIRECT SL ":{"gwh_activos":1.221,"n_activos":29,"gwh_pipe":1.309,"n_pipe":28,"monthly":[{"m":"2025-07","c_n":3,"c_g":0.641,"r_n":21,"r_g":0.506,"ch_n":1,"ch_g":0.001,"net_n":23,"net_g":1.146},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.835,"net_n":-1,"net_g":-0.835},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.042,"net_n":-1,"net_g":-0.042},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.631,"net_n":-3,"net_g":-0.631},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.035,"net_n":-1,"net_g":-0.035},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":1.481,"net_n":-2,"net_g":-1.481},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":5,"ch_g":3.184,"net_n":-5,"net_g":-3.184},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"ANDRES BENZAL":{"gwh_activos":1.209,"n_activos":32,"gwh_pipe":0.596,"n_pipe":20,"monthly":[{"m":"2025-07","c_n":1,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.575,"net_n":0,"net_g":-0.575},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.003,"net_n":-1,"net_g":-0.003},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":3,"c_g":0.111,"r_n":5,"r_g":0.498,"ch_n":0,"ch_g":0.0,"net_n":8,"net_g":0.609},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":1,"c_g":0.0,"r_n":7,"r_g":0.085,"ch_n":1,"ch_g":0.058,"net_n":7,"net_g":0.027},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.11,"net_n":-3,"net_g":-0.11},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"ENERGY POINT":{"gwh_activos":1.203,"n_activos":87,"gwh_pipe":0.146,"n_pipe":13,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":17,"c_g":0.092,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":17,"net_g":0.092},{"m":"2025-09","c_n":2,"c_g":0.005,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.005},{"m":"2025-10","c_n":10,"c_g":0.584,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":10,"net_g":0.584},{"m":"2025-11","c_n":21,"c_g":0.029,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":21,"net_g":0.029},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":1,"c_g":0.001,"r_n":2,"r_g":0.093,"ch_n":0,"ch_g":0.0,"net_n":3,"net_g":0.094},{"m":"2026-02","c_n":24,"c_g":0.288,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.033,"net_n":23,"net_g":0.255},{"m":"2026-03","c_n":7,"c_g":0.011,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.032,"net_n":5,"net_g":-0.021},{"m":"2026-04","c_n":1,"c_g":0.001,"r_n":1,"r_g":0.078,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.079},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.021,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.021},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"FRANCISCO JAVIER VARO CAÑAS":{"gwh_activos":1.184,"n_activos":2,"gwh_pipe":0.012,"n_pipe":1,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":1,"c_g":1.12,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":1.12},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":1,"c_g":0.064,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.064},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"CHIRINGUITO JUGONES":{"gwh_activos":0.932,"n_activos":2,"gwh_pipe":0.0,"n_pipe":1,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.932,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.932},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"Ahorra Luz FG":{"gwh_activos":0.797,"n_activos":69,"gwh_pipe":0.014,"n_pipe":1,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":69,"c_g":0.797,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":69,"net_g":0.797},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"GUSTAVO CARRANZA":{"gwh_activos":0.61,"n_activos":28,"gwh_pipe":0.147,"n_pipe":8,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.007,"net_n":-3,"net_g":-0.007},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.003,"ch_n":1,"ch_g":0.004,"net_n":0,"net_g":-0.001},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.0,"net_n":-1,"net_g":-0.0},{"m":"2026-01","c_n":4,"c_g":0.034,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":4,"net_g":0.034},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.027,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.027},{"m":"2026-03","c_n":9,"c_g":0.296,"r_n":1,"r_g":0.056,"ch_n":0,"ch_g":0.0,"net_n":10,"net_g":0.353},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.03,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.03},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.0,"net_n":-1,"net_g":-0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":3,"r_g":0.028,"ch_n":0,"ch_g":0.0,"net_n":3,"net_g":0.028}]},"ALVARO":{"gwh_activos":0.608,"n_activos":5,"gwh_pipe":0.01,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":1,"c_g":0.012,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.012},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.004,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.004},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":1.089,"net_n":-3,"net_g":-1.089},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"MARTÍN FERNÁNDEZ MARTÍNEZ":{"gwh_activos":0.599,"n_activos":17,"gwh_pipe":0.075,"n_pipe":3,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":14,"c_g":0.481,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":14,"net_g":0.481},{"m":"2026-01","c_n":3,"c_g":0.118,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":3,"net_g":0.118},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.028,"net_n":-1,"net_g":-0.028},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"BEENERGY":{"gwh_activos":0.574,"n_activos":46,"gwh_pipe":0.161,"n_pipe":15,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.018,"net_n":-1,"net_g":-0.018},{"m":"2025-10","c_n":1,"c_g":0.059,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.059},{"m":"2025-11","c_n":2,"c_g":0.021,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.021},{"m":"2025-12","c_n":10,"c_g":0.34,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.051,"net_n":8,"net_g":0.29},{"m":"2026-01","c_n":2,"c_g":0.013,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.013},{"m":"2026-02","c_n":3,"c_g":0.011,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.047,"net_n":0,"net_g":-0.036},{"m":"2026-03","c_n":1,"c_g":0.027,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.027},{"m":"2026-04","c_n":14,"c_g":0.06,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.095,"net_n":11,"net_g":-0.035},{"m":"2026-05","c_n":12,"c_g":0.031,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":12,"net_g":0.031},{"m":"2026-06","c_n":1,"c_g":0.011,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.023,"net_n":-1,"net_g":-0.012}]},"VANTY":{"gwh_activos":0.523,"n_activos":11,"gwh_pipe":0.162,"n_pipe":7,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":4,"c_g":0.175,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":4,"net_g":0.175},{"m":"2026-05","c_n":7,"c_g":0.348,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":7,"net_g":0.348},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"ASER ENERGIAS":{"gwh_activos":0.507,"n_activos":5,"gwh_pipe":0.037,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":5,"c_g":0.507,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":5,"net_g":0.507},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"TRAVIS ENERGIA 2018 SL ":{"gwh_activos":0.382,"n_activos":18,"gwh_pipe":0.434,"n_pipe":8,"monthly":[{"m":"2025-07","c_n":2,"c_g":0.021,"r_n":1,"r_g":0.058,"ch_n":1,"ch_g":0.031,"net_n":2,"net_g":0.047},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":5,"ch_g":0.136,"net_n":-5,"net_g":-0.136},{"m":"2025-09","c_n":8,"c_g":0.127,"r_n":0,"r_g":0.0,"ch_n":8,"ch_g":0.322,"net_n":0,"net_g":-0.194},{"m":"2025-10","c_n":1,"c_g":0.003,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.049,"net_n":-1,"net_g":-0.047},{"m":"2025-11","c_n":1,"c_g":0.002,"r_n":1,"r_g":0.0,"ch_n":3,"ch_g":0.2,"net_n":-1,"net_g":-0.198},{"m":"2025-12","c_n":1,"c_g":0.007,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.007},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":5,"ch_g":0.708,"net_n":-5,"net_g":-0.708},{"m":"2026-02","c_n":1,"c_g":0.157,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.609,"net_n":-2,"net_g":-0.452},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":5,"ch_g":0.762,"net_n":-5,"net_g":-0.762},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":4,"ch_g":0.138,"net_n":-4,"net_g":-0.138},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":6,"ch_g":0.132,"net_n":-6,"net_g":-0.132},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.074,"net_n":-3,"net_g":-0.074}]},"DANIEL IGNACIO ALONSO PETIT":{"gwh_activos":0.295,"n_activos":7,"gwh_pipe":0.048,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.053,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.053},{"m":"2026-02","c_n":1,"c_g":0.059,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.059},{"m":"2026-03","c_n":2,"c_g":0.074,"r_n":1,"r_g":0.035,"ch_n":1,"ch_g":0.017,"net_n":2,"net_g":0.092},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":2,"c_g":0.074,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.035,"net_n":1,"net_g":0.039},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"JOHANNA ISABEL OCHOA RODRIGUEZ":{"gwh_activos":0.267,"n_activos":8,"gwh_pipe":0.095,"n_pipe":3,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":5,"c_g":0.151,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":5,"net_g":0.151},{"m":"2026-04","c_n":3,"c_g":0.116,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.163,"net_n":0,"net_g":-0.047},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":12,"ch_g":0.679,"net_n":-12,"net_g":-0.679},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.122,"net_n":-3,"net_g":-0.122}]},"CLOSENESS":{"gwh_activos":0.238,"n_activos":48,"gwh_pipe":0.256,"n_pipe":50,"monthly":[{"m":"2025-07","c_n":1,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.007,"net_n":-1,"net_g":-0.007},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.031,"net_n":-3,"net_g":-0.031},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.003,"net_n":-1,"net_g":-0.003},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.003,"net_n":-1,"net_g":-0.003},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.008,"ch_n":1,"ch_g":0.005,"net_n":0,"net_g":0.003},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.004,"net_n":-1,"net_g":-0.004},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.008,"ch_n":2,"ch_g":0.007,"net_n":-1,"net_g":0.001},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.004,"net_n":-1,"net_g":-0.004}]},"JAVI OBJETIVO LUZ":{"gwh_activos":0.23,"n_activos":6,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":1,"c_g":0.029,"r_n":0,"r_g":0.0,"ch_n":4,"ch_g":0.321,"net_n":-3,"net_g":-0.292},{"m":"2025-09","c_n":2,"c_g":0.003,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.003},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.178,"net_n":-1,"net_g":-0.178},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.114,"net_n":-1,"net_g":-0.114},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.124,"ch_n":1,"ch_g":0.019,"net_n":0,"net_g":0.105},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.008,"ch_n":2,"ch_g":0.289,"net_n":-1,"net_g":-0.281},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"Telkes Energy":{"gwh_activos":0.213,"n_activos":5,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":5,"c_g":0.213,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":5,"net_g":0.213},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"J.ZAMORA":{"gwh_activos":0.21,"n_activos":23,"gwh_pipe":0.106,"n_pipe":3,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":3,"c_g":0.014,"r_n":1,"r_g":0.006,"ch_n":2,"ch_g":0.043,"net_n":2,"net_g":-0.024},{"m":"2025-09","c_n":1,"c_g":0.001,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.034,"net_n":-2,"net_g":-0.032},{"m":"2025-10","c_n":1,"c_g":0.001,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.001},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.007,"net_n":-1,"net_g":-0.007},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.016,"net_n":-1,"net_g":-0.016},{"m":"2026-01","c_n":2,"c_g":0.003,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.003},{"m":"2026-02","c_n":1,"c_g":0.006,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.023,"net_n":-1,"net_g":-0.018},{"m":"2026-03","c_n":3,"c_g":0.009,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":3,"net_g":0.009},{"m":"2026-04","c_n":7,"c_g":0.025,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.065,"net_n":5,"net_g":-0.04},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.002,"net_n":-1,"net_g":-0.002},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"TOROVEL CAPITAL SL":{"gwh_activos":0.175,"n_activos":3,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":1,"c_g":0.047,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.047},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":1,"c_g":0.073,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.073},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"RAYO ENERGY":{"gwh_activos":0.143,"n_activos":26,"gwh_pipe":0.046,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":1,"c_g":0.001,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.001},{"m":"2026-02","c_n":18,"c_g":0.12,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":18,"net_g":0.12},{"m":"2026-03","c_n":4,"c_g":0.014,"r_n":1,"r_g":0.001,"ch_n":0,"ch_g":0.0,"net_n":5,"net_g":0.015},{"m":"2026-04","c_n":2,"c_g":0.007,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.007},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"MANCEBO":{"gwh_activos":0.138,"n_activos":6,"gwh_pipe":0.171,"n_pipe":4,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":2,"r_g":0.063,"ch_n":2,"ch_g":0.006,"net_n":0,"net_g":0.057},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.005,"net_n":-1,"net_g":-0.005},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.004,"net_n":-1,"net_g":-0.004},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"GUILLERMO":{"gwh_activos":0.136,"n_activos":2,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":1,"c_g":0.048,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.048},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":1,"c_g":0.088,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.088},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"OSA MAYOR SOLAR SL":{"gwh_activos":0.121,"n_activos":6,"gwh_pipe":0.001,"n_pipe":1,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":6,"c_g":0.121,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":6,"net_g":0.121},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]}," CRECE CONSULTING":{"gwh_activos":0.117,"n_activos":2,"gwh_pipe":0.422,"n_pipe":4,"monthly":[{"m":"2025-07","c_n":1,"c_g":0.07,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.188,"net_n":-1,"net_g":-0.118},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.047,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.047},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"CO2 Ingenieria":{"gwh_activos":0.113,"n_activos":32,"gwh_pipe":0.001,"n_pipe":1,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":11,"c_g":0.033,"r_n":1,"r_g":0.001,"ch_n":0,"ch_g":0.0,"net_n":12,"net_g":0.034},{"m":"2025-11","c_n":14,"c_g":0.055,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":14,"net_g":0.055},{"m":"2025-12","c_n":3,"c_g":0.007,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":3,"net_g":0.007},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.0,"net_n":-1,"net_g":-0.0},{"m":"2026-02","c_n":3,"c_g":0.017,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.003,"net_n":2,"net_g":0.014},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.003,"net_n":-1,"net_g":-0.003},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"MTENERGIA":{"gwh_activos":0.102,"n_activos":11,"gwh_pipe":0.099,"n_pipe":4,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":3,"r_g":0.015,"ch_n":0,"ch_g":0.0,"net_n":3,"net_g":0.015},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.031,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.031},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"SEBASTIAN OCAMPO LEON":{"gwh_activos":0.094,"n_activos":2,"gwh_pipe":0.016,"n_pipe":1,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":2,"c_g":0.094,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.029,"net_n":1,"net_g":0.065},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"UEP Energy":{"gwh_activos":0.091,"n_activos":25,"gwh_pipe":0.006,"n_pipe":3,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":22,"c_g":0.08,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":22,"net_g":0.08},{"m":"2026-06","c_n":3,"c_g":0.011,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.002,"net_n":2,"net_g":0.01}]},"IBERGLOBAL SOLUCIONES SL":{"gwh_activos":0.089,"n_activos":4,"gwh_pipe":0.007,"n_pipe":1,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":4,"c_g":0.089,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":4,"net_g":0.089},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"AGUSTÍN MENDOZA":{"gwh_activos":0.088,"n_activos":2,"gwh_pipe":0.098,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":1,"c_g":0.035,"r_n":1,"r_g":0.053,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.088},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"EDUARDO MUÑOZ":{"gwh_activos":0.085,"n_activos":2,"gwh_pipe":0.104,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":2,"c_g":0.085,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.085},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"Burguete":{"gwh_activos":0.08,"n_activos":2,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.019,"net_n":-1,"net_g":-0.019},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"HERQUESA INGIENERÍA":{"gwh_activos":0.076,"n_activos":2,"gwh_pipe":0.054,"n_pipe":1,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":1,"c_g":0.034,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.034},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"RAFA PERIS":{"gwh_activos":0.065,"n_activos":15,"gwh_pipe":0.039,"n_pipe":9,"monthly":[{"m":"2025-07","c_n":2,"c_g":0.005,"r_n":0,"r_g":0.0,"ch_n":7,"ch_g":0.013,"net_n":-5,"net_g":-0.008},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.005,"net_n":-1,"net_g":-0.005},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.004,"net_n":-2,"net_g":-0.004},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":2,"c_g":0.005,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.005},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.003,"ch_n":1,"ch_g":0.0,"net_n":0,"net_g":0.003},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.015,"net_n":-2,"net_g":-0.015},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.112,"net_n":-3,"net_g":-0.112},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.003,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.003},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"ASESORES MEDIATEL SLU":{"gwh_activos":0.065,"n_activos":6,"gwh_pipe":0.005,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":1,"c_g":0.014,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.014},{"m":"2025-12","c_n":1,"c_g":0.002,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.002},{"m":"2026-01","c_n":1,"c_g":0.024,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.02,"net_n":-1,"net_g":0.004},{"m":"2026-02","c_n":2,"c_g":0.011,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.127,"net_n":1,"net_g":-0.116},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.256,"net_n":-3,"net_g":-0.256},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":1,"c_g":0.015,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.04,"net_n":0,"net_g":-0.025},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"AVANTE":{"gwh_activos":0.052,"n_activos":11,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":11,"c_g":0.052,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":11,"net_g":0.052},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"Alex":{"gwh_activos":0.052,"n_activos":6,"gwh_pipe":0.248,"n_pipe":6,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"TERMOECOLOGIC":{"gwh_activos":0.051,"n_activos":9,"gwh_pipe":0.0,"n_pipe":1,"monthly":[{"m":"2025-07","c_n":1,"c_g":0.005,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.005},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":4,"c_g":0.024,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":4,"net_g":0.024},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":4,"c_g":0.022,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":4,"net_g":0.022},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.003,"net_n":-2,"net_g":-0.003},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"ALBIN GÓMEZ INVERSIONES S.L.":{"gwh_activos":0.046,"n_activos":3,"gwh_pipe":0.062,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":2,"c_g":0.021,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.021},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":1,"c_g":0.026,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.05,"net_n":-1,"net_g":-0.024},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.002,"net_n":-1,"net_g":-0.002},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.043,"net_n":-2,"net_g":-0.043},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.003,"net_n":-1,"net_g":-0.003}]},"VICO":{"gwh_activos":0.034,"n_activos":15,"gwh_pipe":0.001,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":6,"ch_g":0.26,"net_n":-6,"net_g":-0.26},{"m":"2025-08","c_n":13,"c_g":0.031,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":13,"net_g":0.031},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.001,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.001},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"JAVIER RUIZ":{"gwh_activos":0.03,"n_activos":4,"gwh_pipe":0.028,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.014,"net_n":-1,"net_g":-0.014},{"m":"2025-08","c_n":1,"c_g":0.002,"r_n":1,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.002},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"ANTONIA MARIA OLIVER SALAS":{"gwh_activos":0.027,"n_activos":3,"gwh_pipe":0.023,"n_pipe":3,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.012,"net_n":-2,"net_g":-0.012},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.006,"net_n":-1,"net_g":-0.006},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"PGCONSULTORES GALLEGO":{"gwh_activos":0.023,"n_activos":5,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":5,"c_g":0.023,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":5,"net_g":0.023},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"GRELO COMUNICACIONES":{"gwh_activos":0.015,"n_activos":5,"gwh_pipe":0.173,"n_pipe":31,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.003,"net_n":-1,"net_g":-0.003},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.008,"net_n":-2,"net_g":-0.008},{"m":"2025-11","c_n":5,"c_g":0.015,"r_n":0,"r_g":0.0,"ch_n":6,"ch_g":0.095,"net_n":-1,"net_g":-0.081},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":27,"ch_g":0.115,"net_n":-27,"net_g":-0.115},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":6,"ch_g":0.071,"net_n":-6,"net_g":-0.071},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":5,"ch_g":0.024,"net_n":-5,"net_g":-0.024},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":4,"ch_g":0.01,"net_n":-4,"net_g":-0.01},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.001,"net_n":-1,"net_g":-0.001},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.002,"net_n":-1,"net_g":-0.002},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"ELECTRIFINCAS":{"gwh_activos":0.013,"n_activos":5,"gwh_pipe":0.009,"n_pipe":4,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.017,"net_n":-2,"net_g":-0.017},{"m":"2025-08","c_n":1,"c_g":0.003,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.003},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.004,"net_n":-1,"net_g":-0.004},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.007,"net_n":-1,"net_g":-0.007},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.041,"net_n":-2,"net_g":-0.041},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.001,"net_n":-1,"net_g":-0.001},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.002,"net_n":-1,"net_g":-0.002},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"MAROSEDO, S.L":{"gwh_activos":0.013,"n_activos":2,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":2,"c_g":0.013,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.013},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.067,"net_n":-1,"net_g":-0.067}]},"ALICIA PRECIADO RIVERA":{"gwh_activos":0.009,"n_activos":2,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":2,"c_g":0.009,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.009},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"Sinedie Advisor":{"gwh_activos":0.008,"n_activos":2,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.009,"net_n":-1,"net_g":-0.009},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":2,"ch_g":0.082,"net_n":-2,"net_g":-0.082},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.009,"net_n":-1,"net_g":-0.009},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.015,"net_n":-1,"net_g":-0.015},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":1,"ch_g":0.007,"net_n":-1,"net_g":-0.007},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.003,"ch_n":1,"ch_g":0.008,"net_n":0,"net_g":-0.005},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"CLABAO FINANCE SL":{"gwh_activos":0.007,"n_activos":4,"gwh_pipe":0.002,"n_pipe":3,"monthly":[{"m":"2025-07","c_n":1,"c_g":0.001,"r_n":0,"r_g":0.0,"ch_n":5,"ch_g":0.011,"net_n":-4,"net_g":-0.01},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":9,"ch_g":0.009,"net_n":-9,"net_g":-0.009},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":3,"ch_g":0.003,"net_n":-3,"net_g":-0.003},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"IKON POWER":{"gwh_activos":0.006,"n_activos":2,"gwh_pipe":0.0,"n_pipe":0,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":2,"c_g":0.006,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":2,"net_g":0.006},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"OSCAR RODRIGUEZ EVOLUXABIA INVEST, S.L.":{"gwh_activos":0.005,"n_activos":3,"gwh_pipe":0.002,"n_pipe":1,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]},"RED PISO":{"gwh_activos":0.003,"n_activos":2,"gwh_pipe":0.005,"n_pipe":2,"monthly":[{"m":"2025-07","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-08","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-09","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-10","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-11","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2025-12","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-01","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-02","c_n":0,"c_g":0.0,"r_n":1,"r_g":0.002,"ch_n":0,"ch_g":0.0,"net_n":1,"net_g":0.002},{"m":"2026-03","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-04","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-05","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0},{"m":"2026-06","c_n":0,"c_g":0.0,"r_n":0,"r_g":0.0,"ch_n":0,"ch_g":0.0,"net_n":0,"net_g":0.0}]}}};
-const MESES = DEL_DATA.meses;
-let sortMode = 'gwh';
-let selectedDel = null;
-let delRendered = false;
-let detailCharts = {};
-
-function setSort(mode) {
-  sortMode = mode;
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('sort-' + mode).classList.add('active');
-  renderCards();
+function makeChart(id, type, datasets, labels, stacked) {
+  if(charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  const xScale = {stacked:stacked, ticks:{color:'#94a3b8',font:{size:10}}, grid:{color:'#2d3148'}};
+  const yScale = {stacked:stacked, ticks:{color:'#94a3b8',font:{size:10}}, grid:{color:'#2d3148'}};
+  charts[id] = new Chart(ctx, {
+    type, data:{labels, datasets},
+    options:{responsive:true, maintainAspectRatio:true,
+      plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}},
+      scales:{x:xScale, y:yScale}
+    }
+  });
 }
 
-function getFiltered() {
-  const q = document.getElementById('delSearch').value.toLowerCase();
-  let entries = Object.entries(DEL_DATA.delegaciones)
-    .filter(([k]) => k.toLowerCase().includes(q));
-  if (sortMode === 'gwh') entries.sort((a,b) => b[1].gwh_activos - a[1].gwh_activos);
-  else if (sortMode === 'n') entries.sort((a,b) => b[1].n_activos - a[1].n_activos);
-  else entries.sort((a,b) => a[0].localeCompare(b[0]));
-  return entries;
+function applyFilter() {
+  const from = parseInt(document.getElementById('filter-from').value);
+  const to   = parseInt(document.getElementById('filter-to').value);
+  const labels = ALL_LABELS.slice(from, to+1);
+  const sl = k => RAW[k].slice(from, to+1);
+  makeChart('chart-altas','bar',[
+    {label:'Nuevas Altas', data:sl('altas'), backgroundColor:'#22c55e99', borderColor:'#22c55e', borderWidth:1},
+    {label:'Renovaciones', data:sl('renov'), backgroundColor:'#f59e0b99', borderColor:'#f59e0b', borderWidth:1},
+  ], labels, true);
+  makeChart('chart-churn','bar',[
+    {label:'Churn real', data:sl('churn'), backgroundColor:'#ef444499', borderColor:'#ef4444', borderWidth:1},
+  ], labels, false);
+  makeChart('chart-gwh-in','bar',[
+    {label:'GWh Nuevas Altas', data:sl('gwhAltas'), backgroundColor:'#22c55e99', borderColor:'#22c55e', borderWidth:1},
+    {label:'GWh Renovaciones', data:sl('gwhRenov'), backgroundColor:'#f59e0b99', borderColor:'#f59e0b', borderWidth:1},
+  ], labels, true);
+  makeChart('chart-gwh-churn','bar',[
+    {label:'GWh Churn', data:sl('gwhChurn'), backgroundColor:'#ef444499', borderColor:'#ef4444', borderWidth:1},
+  ], labels, false);
 }
-
-const miniChartInstances = {};
 
 function renderCards() {
-  const entries = getFiltered();
-  document.getElementById('del-count').textContent = entries.length + ' delegaciones';
-  const grid = document.getElementById('delGrid');
+  const from = parseInt(document.getElementById('del-filter-from').value);
+  const to   = parseInt(document.getElementById('del-filter-to').value);
+  const labels = ALL_LABELS.slice(from, to+1);
+  const grid = document.getElementById('del-grid');
   grid.innerHTML = '';
-  // Destroy old mini charts
-  Object.values(miniChartInstances).forEach(c => c.destroy());
-  Object.keys(miniChartInstances).forEach(k => delete miniChartInstances[k]);
+  // destroy old del charts
+  Object.keys(charts).filter(k=>k.startsWith('dc-')).forEach(k=>{charts[k].destroy();delete charts[k];});
 
-  entries.forEach(([name, d]) => {
-    const last = d.monthly[d.monthly.length - 1];
-    const netoSign = last.net_g >= 0 ? '+' : '';
-    const netoColor = last.net_g >= 0 ? '#10b981' : '#ef4444';
-
+  DEL_DATA.forEach((del, idx) => {
+    const monthly = del.monthly.slice(from, to+1);
+    const totA = monthly.reduce((s,m)=>s+m.altas,0);
+    const totR = monthly.reduce((s,m)=>s+m.renovaciones,0);
+    const totC = monthly.reduce((s,m)=>s+m.churn,0);
     const card = document.createElement('div');
-    card.className = 'del-card' + (selectedDel === name ? ' selected' : '');
-    card.id = 'card-' + name.replace(/\s+/g,'_');
+    card.className = 'del-card';
     card.innerHTML = `
-      <div class="del-card-head">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between">
-          <div class="del-name">${name.length > 40 ? name.slice(0,38)+'…' : name}</div>
-          ${d.n_pipe > 0 ? `<span class="del-pipe-badge">+${d.n_pipe} pipeline</span>` : ''}
-        </div>
-        <div class="del-kpis">
-          <div class="del-kpi">
-            <div class="del-kpi-val">${d.gwh_activos.toFixed(2)}</div>
-            <div class="del-kpi-lbl">GWh activos</div>
-          </div>
-          <div class="del-kpi">
-            <div class="del-kpi-val">${d.n_activos}</div>
-            <div class="del-kpi-lbl">Contratos</div>
-          </div>
-          <div class="del-kpi">
-            <div class="del-kpi-val" style="color:${netoColor}">${netoSign}${last.net_g.toFixed(2)}</div>
-            <div class="del-kpi-lbl">Neto GWh jun</div>
-          </div>
-        </div>
+      <h4 title="${del.nombre}">${del.nombre}</h4>
+      <div class="del-meta">
+        <span>Activos: <strong>${del.contratos}</strong></span>
+        <span>GWh: <strong>${del.gwh}</strong></span>
+        <span style="color:var(--green)">+${totA}</span>
+        <span style="color:var(--orange)">↺${totR}</span>
+        <span style="color:var(--red)">×${totC}</span>
       </div>
-      <div class="del-card-body">
-        <div style="font-size:.67rem;color:var(--muted);margin-bottom:6px">Neto GWh mensual (jul'25–jun'26)</div>
-        <div class="mini-chart-wrap"><canvas id="mini_${name.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')}"></canvas></div>
-      </div>`;
-    card.onclick = () => openDetail(name);
+      <canvas id="dc-${idx}" height="100"></canvas>
+    `;
     grid.appendChild(card);
-
-    // Mini chart
-    const cid = 'mini_' + name.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
-    requestAnimationFrame(() => {
-      const ctx = document.getElementById(cid);
-      if (!ctx) return;
-      const filtered_m = d.monthly.filter(m => m.m >= tfFrom && m.m <= tfTo);
-      const netos = filtered_m.map(m => m.net_g);
-      miniChartInstances[name] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: filtered_m.map(m => m.m.slice(5)),
-          datasets: [{
-            data: netos,
-            backgroundColor: netos.map(v => v >= 0 ? 'rgba(16,185,129,.7)' : 'rgba(239,68,68,.65)'),
-            borderRadius: 3
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { callbacks: {
-            label: ctx => (ctx.raw >= 0 ? '+' : '') + ctx.raw.toFixed(3) + ' GWh'
-          } } },
-          scales: {
-            x: { ticks: { color: '#9ca3af', font: { size: 8 } }, grid: { display: false } },
-            y: { ticks: { color: '#9ca3af', font: { size: 8 } }, grid: { color: 'rgba(200,210,230,.4)' } }
-          }
+    const ctx = document.getElementById('dc-'+idx).getContext('2d');
+    charts['dc-'+idx] = new Chart(ctx, {
+      type:'bar',
+      data:{labels, datasets:[
+        {label:'Altas',    data:monthly.map(m=>m.altas),       backgroundColor:'#22c55e99',borderColor:'#22c55e',borderWidth:1},
+        {label:'Renovac.', data:monthly.map(m=>m.renovaciones), backgroundColor:'#f59e0b99',borderColor:'#f59e0b',borderWidth:1},
+        {label:'Churn',    data:monthly.map(m=>m.churn),        backgroundColor:'#ef444499',borderColor:'#ef4444',borderWidth:1},
+      ]},
+      options:{responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{stacked:true,  ticks:{color:'#94a3b8',font:{size:9}}, grid:{color:'#2d3148'}},
+          y:{stacked:false, ticks:{color:'#94a3b8',font:{size:9}}, grid:{color:'#2d3148'}}
         }
-      });
+      }
     });
   });
 }
 
-function openDetail(name) {
-  selectedDel = name;
-  document.querySelectorAll('.del-card').forEach(c => c.classList.remove('selected'));
-  const cardId = 'card-' + name.replace(/\s+/g,'_');
-  const card = document.getElementById(cardId);
-  if (card) card.classList.add('selected');
-
-  const d = DEL_DATA.delegaciones[name];
-  document.getElementById('detailTitle').textContent = '🏢 ' + name;
-  document.getElementById('delDetail').classList.add('open');
-  document.getElementById('delDetail').scrollIntoView({behavior:'smooth', block:'start'});
-
-  // KPIs
-  const lastM = d.monthly[d.monthly.length - 1];
-  const totalNew  = filtered_d.reduce((s,m) => s + m.c_n, 0);
-  const totalRen  = filtered_d.reduce((s,m) => s + m.r_n, 0);
-  const totalChu  = filtered_d.reduce((s,m) => s + m.ch_n, 0);
-  const totalNewG = filtered_d.reduce((s,m) => s + m.c_g, 0);
-  const totalRenG = filtered_d.reduce((s,m) => s + m.r_g, 0);
-  const totalChuG = filtered_d.reduce((s,m) => s + m.ch_g, 0);
-  document.getElementById('detailKpis').innerHTML = `
-    <div class="dkpi"><div class="dkpi-lbl">GWh activos</div><div class="dkpi-val" style="color:var(--accent)">${d.gwh_activos.toFixed(3)}</div></div>
-    <div class="dkpi"><div class="dkpi-lbl">Contratos activos</div><div class="dkpi-val">${d.n_activos}</div></div>
-    <div class="dkpi"><div class="dkpi-lbl">Altas nuevas (período)</div><div class="dkpi-val" style="color:#10b981">+${totalNew} · ${totalNewG.toFixed(2)} GWh</div></div>
-    <div class="dkpi"><div class="dkpi-lbl">Renovaciones (período)</div><div class="dkpi-val" style="color:#f59e0b">↺${totalRen} · ${totalRenG.toFixed(2)} GWh</div></div>
-    <div class="dkpi"><div class="dkpi-lbl">Churn real (período)</div><div class="dkpi-val" style="color:#ef4444">−${totalChu} · ${totalChuG.toFixed(2)} GWh</div></div>`;
-
-  // Destroy previous detail charts
-  Object.values(detailCharts).forEach(c => c.destroy());
-
-  const filtered_d = d.monthly.filter(m => m.m >= tfFrom && m.m <= tfTo);
-  const labels12 = filtered_d.map(m => m.m.slice(5));
-  const baseOpts = {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: '#6b7280', font: { size: 9 } } } },
-    scales: {
-      x: { ticks: { color: '#9ca3af', font: { size: 8 } }, grid: { display: false } },
-      y: { ticks: { color: '#9ca3af', font: { size: 8 } }, grid: { color: 'rgba(200,210,230,.5)' } }
-    }
-  };
-
-  const stackedScales = {
-    x: { ticks:{color:'#9ca3af',font:{size:8}}, grid:{display:false}, stacked:true },
-    y: { ticks:{color:'#9ca3af',font:{size:8}}, grid:{color:'rgba(200,210,230,.5)'}, stacked:true }
-  };
-  const stackedOpts = { responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{ labels:{ color:'#6b7280', font:{size:9} } } },
-    scales: stackedScales
-  };
-  detailCharts.gwh = new Chart(document.getElementById('detailChartGWh'), {
-    type: 'bar',
-    data: { labels: labels12, datasets: [
-      { label: 'Altas nuevas GWh',  data: filtered_d.map(m => m.c_g),   backgroundColor: 'rgba(16,185,129,.8)',  borderRadius: 3 },
-      { label: 'Renovaciones GWh',  data: filtered_d.map(m => m.r_g),   backgroundColor: 'rgba(245,158,11,.8)', borderRadius: 3 },
-      { label: 'Churn real GWh',    data: filtered_d.map(m => -m.ch_g), backgroundColor: 'rgba(239,68,68,.7)',  borderRadius: 3 }
-    ]},
-    options: stackedOpts
-  });
-
-  detailCharts.neto = new Chart(document.getElementById('detailChartNeto'), {
-    type: 'bar',
-    data: { labels: labels12, datasets: [{
-      label: 'Neto GWh',
-      data: filtered_d.map(m => m.net_g),
-      backgroundColor: filtered_d.map(m => m.net_g >= 0 ? 'rgba(59,126,248,.75)' : 'rgba(239,68,68,.65)'),
-      borderRadius: 3
-    }]},
-    options: baseOpts
-  });
-
-  detailCharts.n = new Chart(document.getElementById('detailChartN'), {
-    type: 'bar',
-    data: { labels: labels12, datasets: [
-      { label: 'Altas nuevas',  data: filtered_d.map(m => m.c_n),   backgroundColor: 'rgba(16,185,129,.8)',  borderRadius: 3 },
-      { label: 'Renovaciones',  data: filtered_d.map(m => m.r_n),   backgroundColor: 'rgba(245,158,11,.8)', borderRadius: 3 },
-      { label: 'Churn real',    data: filtered_d.map(m => -m.ch_n), backgroundColor: 'rgba(239,68,68,.7)',  borderRadius: 3 }
-    ]},
-    options: stackedOpts
-  });
-}
-
-function closeDetail() {
-  document.getElementById('delDetail').classList.remove('open');
-  selectedDel = null;
-  document.querySelectorAll('.del-card').forEach(c => c.classList.remove('selected'));
-}
-
+applyFilter();
 </script>
 </body>
 </html>

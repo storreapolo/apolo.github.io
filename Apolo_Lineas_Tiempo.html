@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apolo — Líneas de tiempo de venta por canal</title>
+<style>
+:root{
+  --negro:#111111; --oro:#C9A23F; --gris:#5f5e5a; --gris2:#8a8a86;
+  --linea:#e2e0d8; --bg:#faf9f5; --card:#ffffff;
+  --cap:#DDEBF7; --capL:#185FA5; --neg:#FCE4D6; --negL:#993C1D;
+  --gan:#E2EFDA; --ganL:#3B6D11; --act:#FFF2CC; --actL:#854F0B;
+  --seg:#EDEDF7; --segL:#534AB7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--negro);padding:24px;line-height:1.4}
+header{max-width:1280px;margin:0 auto 18px}
+h1{font-size:22px;font-weight:bold}
+.sub{font-size:13px;color:var(--gris);margin-top:4px}
+.bar{max-width:1280px;margin:0 auto 16px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;
+  background:var(--card);border:1px solid var(--linea);border-radius:10px;padding:12px 16px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--gris);align-items:center}
+.legend .it{display:flex;align-items:center;gap:5px}
+.dotH{width:11px;height:11px;border-radius:50%;background:var(--gris);display:inline-block}
+.dotA{width:11px;height:11px;border-radius:50%;border:2px dashed var(--gris2);display:inline-block}
+.ph{font-size:11px;padding:3px 9px;border-radius:6px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.controls label{font-size:12px;color:var(--gris)}
+select,button{font-family:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--linea);
+  border-radius:8px;background:var(--card);cursor:pointer}
+button:hover{background:var(--bg)}
+.wrap{max-width:1280px;margin:0 auto}
+.chan{background:var(--card);border:1px solid var(--linea);border-radius:12px;margin-bottom:18px;overflow:hidden}
+.chan h2{font-size:16px;font-weight:bold;padding:12px 16px;background:var(--negro);color:var(--oro);
+  display:flex;justify-content:space-between;align-items:center}
+.chan h2 .meta{font-size:11px;color:#d8c98f;font-weight:normal}
+.scroll{overflow-x:auto;padding:0}
+.track{position:relative;padding:30px 16px 26px}
+.axis{position:absolute;left:0;right:0;height:2px;background:var(--linea);top:90px}
+.col-label{position:absolute;top:6px;font-size:10px;color:var(--gris2);text-align:center;
+  transform:translateX(-50%);white-space:nowrap;line-height:1.1}
+.gl{position:absolute;top:18px;width:1px;background:var(--linea);opacity:.5}
+.node{position:absolute;cursor:default}
+.dot{position:absolute;left:50%;top:90px;transform:translate(-50%,-50%);width:13px;height:13px;
+  border-radius:50%;z-index:3}
+.stick{position:absolute;left:50%;width:1px;transform:translateX(-50%);opacity:.55;z-index:1}
+.card{position:absolute;left:50%;transform:translateX(-50%);width:124px;border-radius:6px;
+  padding:5px 6px;font-size:10px;line-height:1.2;text-align:center;z-index:2;
+  box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.card .ico{font-weight:bold;font-size:10px;opacity:.7}
+.card .ti{font-size:11px;display:block;margin-bottom:2px;letter-spacing:.3px}
+.card.auto{border:1px dashed currentColor}
+.r{font-size:9px;color:var(--gris);margin-top:2px;display:block}
+.hidden{display:none}
+footer{max-width:1280px;margin:18px auto 0;font-size:11px;color:var(--gris2)}
+.tag-auto{display:inline-block;font-size:8px;border:1px dashed currentColor;border-radius:4px;padding:0 3px;margin-left:3px;vertical-align:middle}
+@media print{body{background:#fff}.chan{break-inside:avoid;box-shadow:none}.controls{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Apolo · Líneas de tiempo de venta por canal</h1>
+  <div class="sub">Cada punto es un toque concreto (llamada, email, reunión, mensaje, hito). Relleno = humano · contorno discontinuo = automatizado. Herramienta viva — regenerable desde el Excel.</div>
+</header>
+
+<div class="bar">
+  <div class="legend">
+    <span class="it"><span class="ti-ic">LL</span>·llamada</span>
+    <span class="it"><span class="ti-ic">EM</span>·email</span>
+    <span class="it"><span class="ti-ic">RE</span>·reunión</span>
+    <span class="it"><span class="ti-ic">MS</span>·mensaje</span>
+    <span class="it"><span class="ti-ic">★</span>·hito/tarea</span>
+    <span class="it"><span class="dotH"></span>humano</span>
+    <span class="it"><span class="dotA"></span>auto</span>
+  </div>
+  <div class="legend">
+    <span class="ph" style="background:var(--cap);color:var(--capL)">Captación</span>
+    <span class="ph" style="background:var(--neg);color:var(--negL)">Negociación</span>
+    <span class="ph" style="background:var(--gan);color:var(--ganL)">Ganada</span>
+    <span class="ph" style="background:var(--act);color:var(--actL)">Activación</span>
+    <span class="ph" style="background:var(--seg);color:var(--segL)">Seguimiento</span>
+  </div>
+  <div class="controls">
+    <label>Fase</label>
+    <select id="fFase">
+      <option value="">Todas</option>
+      <option>Captación</option><option>Negociación</option><option>Ganada</option>
+      <option>Activación</option><option>Seguimiento ventas</option>
+    </select>
+    <label>Modo</label>
+    <select id="fModo"><option value="">Ambos</option><option>Humano</option><option>Auto</option></select>
+    <button onclick="window.print()">Imprimir / PDF</button>
+  </div>
+</div>
+
+<div class="wrap" id="wrap"></div>
+
+<footer>Generado para Apolo Energías · Color = fase del pipeline · Icono = tipo de toque · Pasa el ratón sobre un punto para ver responsable y nota.</footer>
+
+<script>
+const DATA = {"Colaboradores Tier 1": [{"cuando": "Día 0", "fase": "Captación", "tipo": "Email", "titulo": "Email de presentación", "modo": "Humano", "resp": "Isabella", "sup": "Wences", "nota": "Primer contacto + propuesta de valor"}, {"cuando": "Día 2", "fase": "Captación", "tipo": "Llamada", "titulo": "Llamada de cualificación", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "Encaje, volumen, capacidad de traer clientes"}, {"cuando": "Día 3", "fase": "Captación", "tipo": "Email", "titulo": "Email confirmación reunión", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "Agenda + materiales"}, {"cuando": "Día 6", "fase": "Captación", "tipo": "Reunión", "titulo": "Reunión de presentación", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "Apolo + modelo B2B2B"}, {"cuando": "Día 8", "fase": "Negociación", "tipo": "Email", "titulo": "Email envío de propuesta", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": "Condiciones, comisiones, tiers"}, {"cuando": "Día 10", "fase": "Negociación", "tipo": "Llamada", "titulo": "Llamada de seguimiento propuesta", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": "Resolver dudas"}, {"cuando": "Día 12", "fase": "Negociación", "tipo": "Reunión", "titulo": "Reunión de negociación", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": "Resolver objeciones, ajustar condiciones"}, {"cuando": "Día 14", "fase": "Negociación", "tipo": "Email", "titulo": "Email envío de contrato", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": "Acuerdo marco / contrato"}, {"cuando": "Día 16", "fase": "Negociación", "tipo": "Llamada", "titulo": "Llamada de cierre", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "Empujar firma"}, {"cuando": "Día 18", "fase": "Negociación", "tipo": "Mensaje (WA/SMS)", "titulo": "Mensaje recordatorio firma", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "Si no ha firmado"}, {"cuando": "Día 20", "fase": "Ganada", "tipo": "Tarea interna", "titulo": "Firma de contrato", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "HITO: ganada"}, {"cuando": "Día 20", "fase": "Ganada", "tipo": "Tarea interna", "titulo": "Alta en sistemas (CRM/ERP)", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": ""}, {"cuando": "Día 21", "fase": "Ganada", "tipo": "Tarea interna", "titulo": "Crear comparador personalizado", "modo": "Humano", "resp": "Sergio", "sup": "Sergio", "nota": "Marca, dominio, branding"}, {"cuando": "Día 22", "fase": "Ganada", "tipo": "Email", "titulo": "Email con accesos al comparador", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "Usuarios y subusuarios"}, {"cuando": "Sem 4", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión de onboarding", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": "Producto, comparador, proceso de venta"}, {"cuando": "Sem 4", "fase": "Activación", "tipo": "Reunión", "titulo": "Formación al equipo", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 5", "fase": "Activación", "tipo": "Llamada", "titulo": "Llamada 1ª comparativa", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": "Acompañar primeras comparativas"}, {"cuando": "Sem 5", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión semanal de activación", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": "Detectar blockers"}, {"cuando": "Sem 6", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión semanal de activación", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 7", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión semanal de activación", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 8+", "fase": "Seguimiento ventas", "tipo": "Llamada", "titulo": "Llamada de seguimiento (semanal)", "modo": "Humano", "resp": "Wences", "sup": "Wences", "nota": "Cadencia: 1 llamada/sem"}, {"cuando": "Sem 8+", "fase": "Seguimiento ventas", "tipo": "Email", "titulo": "Email de seguimiento (semanal)", "modo": "Humano", "resp": "Wences", "sup": "Wences", "nota": "Volumen vs objetivo GWh/CUPS"}, {"cuando": "Mensual", "fase": "Seguimiento ventas", "tipo": "Email", "titulo": "Informe mensual de resultados", "modo": "Humano", "resp": "Wences", "sup": "Wences", "nota": "Plan de mejora"}, {"cuando": "Trimestral", "fase": "Seguimiento ventas", "tipo": "Reunión", "titulo": "Reunión de upsell / cross-sell", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": "Gas, autoconsumo, verticales"}, {"cuando": "Anual", "fase": "Seguimiento ventas", "tipo": "Reunión", "titulo": "Reunión de renovación y retención", "modo": "Humano", "resp": "Wences", "sup": "Wences", "nota": ""}, {"cuando": "Si no firma · D22", "fase": "Negociación", "tipo": "Email", "titulo": "Nurturing 1 — caso de éxito", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": "Secuencia automática"}, {"cuando": "Si no firma · D29", "fase": "Negociación", "tipo": "Email", "titulo": "Nurturing 2 — recordatorio de valor", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": ""}, {"cuando": "Si no firma · D36", "fase": "Negociación", "tipo": "Llamada", "titulo": "Llamada de reintento", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "Último intento humano"}, {"cuando": "Si no firma · D45", "fase": "Negociación", "tipo": "Tarea interna", "titulo": "Derivar a nurturing largo o descartar", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "Decisión"}], "Colaboradores Tier 2": [{"cuando": "Día 0", "fase": "Captación", "tipo": "Email", "titulo": "Email de presentación", "modo": "Humano", "resp": "Isabella", "sup": "Wences", "nota": ""}, {"cuando": "Día 3", "fase": "Captación", "tipo": "Llamada", "titulo": "Llamada de cualificación", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "Cualificación rápida"}, {"cuando": "Día 6", "fase": "Captación", "tipo": "Reunión", "titulo": "Reunión (online u presencial)", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "Según encaje"}, {"cuando": "Día 8", "fase": "Negociación", "tipo": "Email", "titulo": "Email de condiciones + contrato", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": "Condiciones estándar"}, {"cuando": "Día 11", "fase": "Negociación", "tipo": "Llamada", "titulo": "Llamada de seguimiento", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "Resolver dudas"}, {"cuando": "Día 13", "fase": "Negociación", "tipo": "Mensaje (WA/SMS)", "titulo": "Mensaje recordatorio firma", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": ""}, {"cuando": "Día 15", "fase": "Ganada", "tipo": "Tarea interna", "titulo": "Firma de contrato", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": "HITO"}, {"cuando": "Día 15", "fase": "Ganada", "tipo": "Tarea interna", "titulo": "Alta en sistemas", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": ""}, {"cuando": "Día 16", "fase": "Ganada", "tipo": "Email", "titulo": "Email accesos comparador", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": "Usuario principal"}, {"cuando": "Sem 3", "fase": "Activación", "tipo": "Reunión", "titulo": "Onboarding online", "modo": "Humano", "resp": "Johana", "sup": "Wences", "nota": ""}, {"cuando": "Sem 3", "fase": "Activación", "tipo": "Llamada", "titulo": "Llamada 1ª comparativa", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 5", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión quincenal de activación", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 7", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión quincenal de activación", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Mensual", "fase": "Seguimiento ventas", "tipo": "Llamada", "titulo": "Llamada de seguimiento mensual", "modo": "Humano", "resp": "Wences", "sup": "Wences", "nota": "Cadencia: 1 llamada + 1 email/mes"}, {"cuando": "Mensual", "fase": "Seguimiento ventas", "tipo": "Email", "titulo": "Email de seguimiento mensual", "modo": "Humano", "resp": "Wences", "sup": "Wences", "nota": ""}, {"cuando": "Si baja actividad", "fase": "Seguimiento ventas", "tipo": "Email", "titulo": "Email de reactivación", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": "Alerta de inactividad"}, {"cuando": "Si no firma · D17", "fase": "Negociación", "tipo": "Email", "titulo": "Nurturing 1 (auto)", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": ""}, {"cuando": "Si no firma · D24", "fase": "Negociación", "tipo": "Email", "titulo": "Nurturing 2 (auto)", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": ""}, {"cuando": "Si no firma · D31", "fase": "Negociación", "tipo": "Tarea interna", "titulo": "Derivar a nurturing o descartar", "modo": "Humano", "resp": "Óscar", "sup": "Wences", "nota": ""}], "Colaboradores Tier 3": [{"cuando": "Día 0", "fase": "Captación", "tipo": "Auto", "titulo": "Lead inbound (formulario/landing)", "modo": "Auto", "resp": "Isabella", "sup": "Wences", "nota": "Autoservicio"}, {"cuando": "Día 0", "fase": "Captación", "tipo": "Auto", "titulo": "Scoring automático del lead", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": ""}, {"cuando": "Día 0", "fase": "Captación", "tipo": "Email", "titulo": "Email de bienvenida (secuencia)", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": "Automatizado"}, {"cuando": "Día 2", "fase": "Captación", "tipo": "Email", "titulo": "Email informativo 2 (secuencia)", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": ""}, {"cuando": "Día 4", "fase": "Negociación", "tipo": "Email", "titulo": "Email condiciones estándar", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": "Sin negociación a medida"}, {"cuando": "Día 5", "fase": "Negociación", "tipo": "Auto", "titulo": "Firma de contrato digital (autoservicio)", "modo": "Auto", "resp": "Óscar", "sup": "Wences", "nota": ""}, {"cuando": "Día 7", "fase": "Negociación", "tipo": "Email", "titulo": "Recordatorio de firma (auto)", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": "Si no completa"}, {"cuando": "Día 9", "fase": "Negociación", "tipo": "Email", "titulo": "Recordatorio de firma 2 (auto)", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": ""}, {"cuando": "Día 10", "fase": "Ganada", "tipo": "Auto", "titulo": "Firma digital completada", "modo": "Auto", "resp": "Óscar", "sup": "Wences", "nota": "HITO"}, {"cuando": "Día 10", "fase": "Ganada", "tipo": "Auto", "titulo": "Alta automática en sistemas", "modo": "Auto", "resp": "Erwin", "sup": "Sergio", "nota": ""}, {"cuando": "Día 10", "fase": "Ganada", "tipo": "Email", "titulo": "Email con accesos comparador (auto)", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": "Comparador autoservicio"}, {"cuando": "Sem 2", "fase": "Activación", "tipo": "Email", "titulo": "Onboarding automatizado (tutoriales/vídeos)", "modo": "Auto", "resp": "Johana", "sup": "Wences", "nota": "Secuencia"}, {"cuando": "Sem 2", "fase": "Activación", "tipo": "Email", "titulo": "Recordatorio 1ª comparativa (auto)", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": ""}, {"cuando": "Reactivo", "fase": "Activación", "tipo": "Auto", "titulo": "Soporte a petición (ticket/chat)", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": "Solo si lo pide"}, {"cuando": "Según comportam.", "fase": "Seguimiento ventas", "tipo": "Email", "titulo": "Emails/mensajes automáticos", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": "Según comportamiento"}, {"cuando": "Si inactivo", "fase": "Seguimiento ventas", "tipo": "Email", "titulo": "Alerta de inactividad + reactivación", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": ""}, {"cuando": "Si supera umbral", "fase": "Seguimiento ventas", "tipo": "Llamada", "titulo": "Escalado a gestor humano", "modo": "Humano", "resp": "Wences", "sup": "Wences", "nota": "Solo si supera umbral de actividad/volumen"}], "Marcas Blancas": [{"cuando": "Día 0", "fase": "Captación", "tipo": "Email", "titulo": "Email de presentación", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 2", "fase": "Captación", "tipo": "Llamada", "titulo": "Llamada de cualificación", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 6", "fase": "Captación", "tipo": "Reunión", "titulo": "Reunión de presentación", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": "Apolo + modelo B2B2B"}, {"cuando": "Día 8", "fase": "Negociación", "tipo": "Email", "titulo": "Email envío de propuesta", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 11", "fase": "Negociación", "tipo": "Llamada", "titulo": "Llamada de seguimiento propuesta", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 13", "fase": "Negociación", "tipo": "Reunión", "titulo": "Reunión de negociación", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 16", "fase": "Negociación", "tipo": "Email", "titulo": "Email envío de contrato", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 18", "fase": "Negociación", "tipo": "Llamada", "titulo": "Llamada de cierre", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 20", "fase": "Ganada", "tipo": "Tarea interna", "titulo": "Firma de acuerdo marco", "modo": "Humano", "resp": "Wences", "sup": "Wences", "nota": "HITO"}, {"cuando": "Día 20", "fase": "Ganada", "tipo": "Tarea interna", "titulo": "Alta en sistemas", "modo": "Humano", "resp": "Carlos", "sup": "Sergio", "nota": ""}, {"cuando": "Día 21", "fase": "Ganada", "tipo": "Tarea interna", "titulo": "Crear comparador (marca/dominio)", "modo": "Humano", "resp": "Sergio", "sup": "Sergio", "nota": ""}, {"cuando": "Día 22", "fase": "Ganada", "tipo": "Email", "titulo": "Email accesos (usuarios/subusuarios)", "modo": "Humano", "resp": "Carlos", "sup": "Sergio", "nota": ""}, {"cuando": "Sem 4", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión de onboarding", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 4", "fase": "Activación", "tipo": "Reunión", "titulo": "Formación al equipo", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 5", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión semanal de activación", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 6", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión semanal de activación", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 7", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión semanal de activación", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 8+", "fase": "Seguimiento ventas", "tipo": "Llamada", "titulo": "Llamada de seguimiento (semanal)", "modo": "Humano", "resp": "Wences", "sup": "Wences", "nota": ""}, {"cuando": "Mensual", "fase": "Seguimiento ventas", "tipo": "Email", "titulo": "Informe mensual", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Trimestral", "fase": "Seguimiento ventas", "tipo": "Reunión", "titulo": "Reunión de upsell/cross-sell", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Anual", "fase": "Seguimiento ventas", "tipo": "Reunión", "titulo": "Reunión de renovación", "modo": "Humano", "resp": "Sergio", "sup": "Wences", "nota": ""}, {"cuando": "Si no firma · D22", "fase": "Negociación", "tipo": "Email", "titulo": "Nurturing (auto)", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": ""}, {"cuando": "Si no firma · D36", "fase": "Negociación", "tipo": "Llamada", "titulo": "Llamada de reintento", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}], "Partnerships": [{"cuando": "Día 0", "fase": "Captación", "tipo": "Email", "titulo": "Email de presentación", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 2", "fase": "Captación", "tipo": "Llamada", "titulo": "Llamada de cualificación", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 6", "fase": "Captación", "tipo": "Reunión", "titulo": "Reunión de presentación", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": "Apolo + modelo B2B2B"}, {"cuando": "Día 9", "fase": "Negociación", "tipo": "Reunión", "titulo": "Reunión de encaje estratégico", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": "Definir incentivo al partner"}, {"cuando": "Día 12", "fase": "Negociación", "tipo": "Email", "titulo": "Email envío de propuesta", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 15", "fase": "Negociación", "tipo": "Reunión", "titulo": "Reunión de negociación", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": "Acuerdo a medida"}, {"cuando": "Día 20", "fase": "Negociación", "tipo": "Email", "titulo": "Email envío de contrato", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 24", "fase": "Negociación", "tipo": "Llamada", "titulo": "Llamada de cierre", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Día 28", "fase": "Ganada", "tipo": "Tarea interna", "titulo": "Firma de acuerdo marco", "modo": "Humano", "resp": "Wences", "sup": "Wences", "nota": "HITO"}, {"cuando": "Día 28", "fase": "Ganada", "tipo": "Tarea interna", "titulo": "Alta en sistemas", "modo": "Humano", "resp": "Carlos", "sup": "Sergio", "nota": ""}, {"cuando": "Sem 5", "fase": "Ganada", "tipo": "Tarea interna", "titulo": "Integración técnica / comparador", "modo": "Humano", "resp": "Sergio", "sup": "Sergio", "nota": "Teleco/aseguradora/alarmas"}, {"cuando": "Sem 5", "fase": "Ganada", "tipo": "Email", "titulo": "Email accesos (usuarios/subusuarios)", "modo": "Humano", "resp": "Carlos", "sup": "Sergio", "nota": ""}, {"cuando": "Sem 6", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión de onboarding", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 6", "fase": "Activación", "tipo": "Reunión", "titulo": "Formación al equipo del partner", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 7", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión semanal de activación", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 8", "fase": "Activación", "tipo": "Reunión", "titulo": "Reunión semanal de activación", "modo": "Humano", "resp": "Javi", "sup": "Wences", "nota": ""}, {"cuando": "Sem 9+", "fase": "Seguimiento ventas", "tipo": "Llamada", "titulo": "Llamada de seguimiento (semanal)", "modo": "Humano", "resp": "Wences", "sup": "Wences", "nota": ""}, {"cuando": "Mensual", "fase": "Seguimiento ventas", "tipo": "Email", "titulo": "Informe mensual", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Trimestral", "fase": "Seguimiento ventas", "tipo": "Reunión", "titulo": "Reunión de upsell/cross-sell", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}, {"cuando": "Anual", "fase": "Seguimiento ventas", "tipo": "Reunión", "titulo": "Reunión de renovación", "modo": "Humano", "resp": "Sergio", "sup": "Wences", "nota": ""}, {"cuando": "Si no firma · D30", "fase": "Negociación", "tipo": "Email", "titulo": "Nurturing (auto)", "modo": "Auto", "resp": "Hubspot", "sup": "Wences", "nota": ""}, {"cuando": "Si no firma · D45", "fase": "Negociación", "tipo": "Reunión", "titulo": "Reunión de reactivación", "modo": "Humano", "resp": "Carlos", "sup": "Wences", "nota": ""}]};
+const SLOT_ORDER = ["Día 0", "Día 2", "Día 3", "Día 4", "Día 5", "Día 6", "Día 7", "Día 8", "Día 9", "Día 10", "Día 11", "Día 12", "Día 13", "Día 14", "Día 15", "Día 16", "Día 17", "Día 18", "Día 20", "Día 21", "Día 22", "Sem 2", "Sem 3", "Sem 4", "Sem 5", "Sem 6", "Sem 7", "Sem 8", "Sem 8+", "Sem 9+", "Mensual", "Trimestral", "Anual", "Reactivo", "Según comportam.", "Si baja actividad", "Si inactivo", "Si supera umbral"];
+const PH = {
+ "Captación":{bg:"var(--cap)",l:"var(--capL)"},
+ "Negociación":{bg:"var(--neg)",l:"var(--negL)"},
+ "Ganada":{bg:"var(--gan)",l:"var(--ganL)"},
+ "Activación":{bg:"var(--act)",l:"var(--actL)"},
+ "Seguimiento ventas":{bg:"var(--seg)",l:"var(--segL)"}
+};
+const ICO = {"Llamada":"LL","Email":"EM","Reunión":"RE","Mensaje (WA/SMS)":"MS","Tarea interna":"★","Auto":"AUTO"};
+const COLW=86, AXIS=90;
+
+function slotIndex(c){
+  if(c.startsWith("Si no firma")) return 900;
+  const i = SLOT_ORDER.indexOf(c);
+  return i>=0?i:800;
+}
+function uniqueSlots(pts){
+  const set=[...new Set(pts.map(p=>p.cuando))];
+  set.sort((a,b)=>slotIndex(a)-slotIndex(b)||a.localeCompare(b));
+  return set;
+}
+
+function render(){
+  const fFase=document.getElementById('fFase').value;
+  const fModo=document.getElementById('fModo').value;
+  const wrap=document.getElementById('wrap');
+  wrap.innerHTML='';
+  for(const [canal,ptsAll] of Object.entries(DATA)){
+    const pts = ptsAll.filter(p=>(!fFase||p.fase===fFase)&&(!fModo||p.modo===fModo));
+    const slots = uniqueSlots(ptsAll);
+    const width = slots.length*COLW + 40;
+    const nH = pts.filter(p=>p.modo==='Humano').length;
+    const nA = pts.length - nH;
+    const div=document.createElement('div');
+    div.className='chan';
+    let inner=`<h2>${canal}<span class="meta">${pts.length} toques · ${nH} humanos / ${nA} auto</span></h2>`;
+    inner+=`<div class="scroll"><div class="track" style="width:${width}px;min-height:200px">`;
+    inner+=`<div class="axis"></div>`;
+    slots.forEach((s,i)=>{
+      const x=20+i*COLW+COLW/2;
+      inner+=`<div class="col-label" style="left:${x}px">${s.replace('Si no firma · ','⚠ ')}</div>`;
+      inner+=`<div class="gl" style="left:${x}px;height:120px"></div>`;
+    });
+    const stackUp={}, stackDn={};
+    pts.forEach((p,idx)=>{
+      const si=slots.indexOf(p.cuando);
+      const x=20+si*COLW+COLW/2;
+      const ph=PH[p.fase]||{bg:'#eee',l:'#666'};
+      const up = idx%2===0;
+      let k=p.cuando;
+      let lvl;
+      if(up){lvl=(stackUp[k]=(stackUp[k]||0)+1)-1;}else{lvl=(stackDn[k]=(stackDn[k]||0)+1)-1;}
+      const dotStyle = p.modo==='Humano'
+        ? `background:${ph.l};border:2px solid ${ph.l}`
+        : `background:#fff;border:2px dashed ${ph.l}`;
+      const cardH=46;
+      const gap=10;
+      const cy = up ? AXIS - gap - cardH - lvl*(cardH+6)
+                    : AXIS + gap + lvl*(cardH+6);
+      const stickTop = up ? cy+cardH : AXIS;
+      const stickH = up ? (AXIS-(cy+cardH)) : (cy-AXIS);
+      const autoCls = p.modo==='Humano'?'':' auto';
+      const tag = p.modo==='Humano'?'':'<span class="tag-auto">auto</span>';
+      inner+=`<div class="stick" style="left:${x}px;top:${stickTop}px;height:${Math.max(stickH,0)}px;background:${ph.l}"></div>`;
+      inner+=`<div class="dot" style="left:${x}px;${dotStyle}" title="${p.titulo}"></div>`;
+      inner+=`<div class="card${autoCls}" style="left:${x}px;top:${cy}px;background:${ph.bg};color:${ph.l}">
+        <span class="ti">${ICO[p.tipo]||''}</span>${p.titulo}${tag}
+        <span class="r">${p.resp}${p.sup&&p.sup!==p.resp?' · sup: '+p.sup:''}</span>
+      </div>`;
+    });
+    inner+=`</div></div>`;
+    div.innerHTML=inner;
+    wrap.appendChild(div);
+  }
+}
+document.getElementById('fFase').addEventListener('change',render);
+document.getElementById('fModo').addEventListener('change',render);
+render();
+</script>
+</body>
+</html>
